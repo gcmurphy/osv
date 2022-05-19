@@ -1,0 +1,25 @@
+[package]
+name = "osv"
+version = "0.1.0"
+edition = "2021"
+authors = ["Grant Murphy <gcmurphy@pm.me>"]
+documentation = "https://docs.rs/osv" 
+description = "Rust client library for the osv API"
+readme = "README.md"
+license = "Apache-2.0"
+license-file = "LICENSE"
+keywords = ["vulnerabilities", "security", "osv"]
+
+
+[dependencies]
+async-std = { version = "1.11.0", features = ["attributes"]}
+chrono = { version = "0.4.19", features = ["serde"] }
+serde = "1.0.137"
+serde_json = "1.0.81"
+surf = "2.3.2"
+thiserror = "1.0.31"
+url = "2.2.2"
+
+[dev-dependencies]
+comfy-table = "5.0.1"
+textwrap = { version = "0.15.0", features = ["default", "terminal_size"] }
