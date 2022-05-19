@@ -7,7 +7,6 @@ documentation = "https://docs.rs/osv"
 description = "Rust client library for the osv API"
 readme = "README.md"
 license = "Apache-2.0"
-license-file = "LICENSE"
 keywords = ["vulnerabilities", "security", "osv"]
 
 
