@@ -335,7 +335,7 @@ pub enum Request {
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
-pub enum Response {
+enum Response {
     Vulnerabilities { vulns: Vec<Vulnerability> },
     NoResult(serde_json::Value),
 }
