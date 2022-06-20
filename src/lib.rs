@@ -98,7 +98,7 @@ pub enum Ecosystem {
 
 /// Type of the affected range supplied. This can be an ecosystem
 /// specific value, semver, or a git commit hash.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum RangeType {
     /// Default for the case where a range type is omitted.
@@ -117,7 +117,7 @@ pub enum RangeType {
 
 /// The event captures information about the how and when
 /// the package was affected by the vulnerability.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[non_exhaustive]
 pub enum Event {
@@ -134,7 +134,7 @@ pub enum Event {
 
 /// The range of versions of a package for which
 /// it is affected by the vulnerability.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Range {
     /// The format that the range events are specified in, for
     /// example SEMVER or GIT.
@@ -155,7 +155,7 @@ pub struct Range {
 /// by a particular vulnerability. The affected ranges can include
 /// when the vulnerability was first introduced and also when it
 /// was fixed.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Affected {
     /// The package that is affected by the vulnerability
     pub package: Package,
@@ -183,7 +183,7 @@ pub struct Affected {
 /// The type of reference information that has been provided. Examples include
 /// links to the original report, external advisories, or information about the
 /// fix.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum ReferenceType {
     #[serde(rename = "NONE")]
@@ -197,7 +197,7 @@ pub enum ReferenceType {
 }
 
 /// Reference to additional information about the vulnerability.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Reference {
     /// The type of reference this URL points to.
     #[serde(rename = "type")]
@@ -210,7 +210,7 @@ pub struct Reference {
 
 /// The [`SeverityType`](SeverityType) describes the quantitative scoring method used to rate the
 /// severity of the vulnerability.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum SeverityType {
     /// The severity score was arrived at by using an unspecified
     /// scoring method.
@@ -226,7 +226,7 @@ pub enum SeverityType {
 
 /// The type and score used to describe the severity of a vulnerability using one
 /// or more quantitative scoring methods.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Severity {
     /// The severity type property must be a [`SeverityType`](SeverityType), which describes the
     /// quantitative method used to calculate the associated score.
@@ -240,7 +240,7 @@ pub struct Severity {
 
 /// Provides a way to give credit for the discovery, confirmation, patch or other events in the
 /// life cycle of a vulnerability.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Credit {
     pub name: String,
     pub contact: Vec<String>,
@@ -252,7 +252,7 @@ pub struct Credit {
 /// This is the entity that is returned when vulnerable data exists for
 /// a given package or when requesting information about a specific vulnerability
 /// by unique identifier.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Vulnerability {
     /// The schema_version field is used to indicate which version of the OSV schema a particular
     /// vulnerability was exported with.
@@ -333,7 +333,7 @@ pub enum Request {
     PackageQuery { version: Version, package: Package },
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 enum Response {
     Vulnerabilities { vulns: Vec<Vulnerability> },
