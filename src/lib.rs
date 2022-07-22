@@ -64,6 +64,7 @@ pub struct Package {
     /// The purl field is a string following the [Package URL
     /// specification](https://github.com/package-url/purl-spec) that identifies the
     /// package. This field is optional but recommended.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub purl: Option<String>,
 }
 
@@ -144,6 +145,7 @@ pub struct Range {
     /// The ranges object’s repo field is the URL of the package’s code repository. The value
     /// should be in a format that’s directly usable as an argument for the version control
     /// system’s clone command
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub repo: Option<String>,
 
     /// Represent a status timeline for how the vulnerability affected the package. For
@@ -166,17 +168,20 @@ pub struct Affected {
 
     /// Each string is a single affected version in whatever version syntax is
     /// used by the given package ecosystem.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub versions: Option<Vec<String>>,
 
     /// A JSON object that holds any additional information about the
     /// vulnerability as defined by the ecosystem for which the record applies.
     ///
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ecosystem_specific: Option<serde_json::Value>,
 
     /// A JSON object to hold any additional information about the range
     /// from which this record was obtained. The meaning of the values within
     /// the object is entirely defined by the database.
     ///
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub database_specific: Option<serde_json::Value>,
 }
 
@@ -274,6 +279,7 @@ pub struct Vulnerability {
     /// as an RFC3339-formatted timestamp in UTC (ending in “Z”). If the field is missing, then the
     /// entry has not been withdrawn. Any rationale for why the vulnerability has been withdrawn
     /// should go into the summary text.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub withdrawn: Option<DateTime<Utc>>,
 
     /// The aliases field gives a list of IDs of the same vulnerability in other databases, in the
@@ -281,14 +287,17 @@ pub struct Vulnerability {
     /// same vulnerability as one or more entries in other databases. Or if one database entry has
     /// been deduplicated into another in the same database, the duplicate entry could be written
     /// using only the id, modified, and aliases field, to point to the canonical one.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub aliases: Option<Vec<String>>,
 
     /// The related field gives a list of IDs of closely related vulnerabilities, such as the same
     /// problem in alternate ecosystems.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub related: Option<Vec<String>>,
 
     /// The summary field gives a one-line, English textual summary of the vulnerability. It is
     /// recommended that this field be kept short, on the order of no more than 120 characters.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub summary: Option<String>,
 
     /// The details field gives additional English textual details about the vulnerability. The
@@ -297,6 +306,7 @@ pub struct Vulnerability {
     /// do not start with http:// or https://. Databases are encouraged not to include those in the
     /// first place. (The goal is to balance flexibility of presentation with not exposing
     /// vulnerability database display sites to unnecessary vulnerabilities.)
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<String>,
 
     /// Indicates the specific package ranges that are affected by this vulnerability.
@@ -304,19 +314,23 @@ pub struct Vulnerability {
 
     /// An optional list of external reference's that provide more context about this
     /// vulnerability.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub references: Option<Vec<Reference>>,
 
     /// The severity field is a JSON array that allows generating systems to describe the severity
     /// of a vulnerability using one or more quantitative scoring methods. Each severity item is a
     /// object specifying a type and score property.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub severity: Option<Vec<Severity>>,
 
     /// Provides a way to give credit for the discovery, confirmation, patch or other events in the
     /// life cycle of a vulnerability.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub credits: Option<Vec<Credit>>,
 
     /// Top level field to hold any additional information about the vulnerability as defined
     /// by the database from which the record was obtained.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub database_specific: Option<serde_json::Value>,
 }
 
@@ -608,4 +622,38 @@ mod tests {
         let res = vulnerability("CVE-2014-0160").await;
         assert!(res.is_err());
     }
+
+    #[async_std::test]
+    async fn test_no_serialize_null_fields() {
+        let vuln = Vulnerability {
+          schema_version: "1.3.0".to_string(),
+          id: "OSV-2020-484".to_string(),
+          published: chrono::Utc::now(),
+          modified: chrono::Utc::now(),
+          withdrawn: None,
+          aliases: None,
+          related: None,
+          summary: None,
+          details: None,
+          affected: vec![],
+          references: None,
+          severity: None,
+          credits: None,
+          database_specific: None
+        };
+
+        let as_json = serde_json::json!(vuln);
+        let str_json = as_json.to_string();
+        assert!(!str_json.contains("withdrawn"));
+        assert!(!str_json.contains("aliases"));
+        assert!(!str_json.contains("related"));
+        assert!(!str_json.contains("summary"));
+        assert!(!str_json.contains("details"));
+        assert!(!str_json.contains("references"));
+        assert!(!str_json.contains("severity"));
+        assert!(!str_json.contains("credits"));
+        assert!(!str_json.contains("database_specific"));
+    }
+
+    
 }
