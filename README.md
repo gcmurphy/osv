@@ -1,4 +1,4 @@
-# osv - A rust client library for https://api.osv.dev
+# osv - A rust client library for the OSV schema
 
 <div align="center">
   <a href="https://crates.io/crates/osv">
@@ -17,6 +17,8 @@
 https://osv.dev is a vulnerability database and triage infrastructure
 for open source projects. This library provides bindings to osv 
 API to allow usage from the Rust language.
+
+Currently compatible with v1.3.0 of the ossf/osv-schema.
 
 ### References
 
