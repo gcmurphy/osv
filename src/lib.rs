@@ -95,6 +95,9 @@ pub enum Ecosystem {
     Debian,
     Hex,
     Android,
+    #[serde(rename = "GitHub Actions")]
+    GitHubActions,
+    Pub,
 }
 
 /// Type of the affected range supplied. This can be an ecosystem
@@ -655,5 +658,5 @@ mod tests {
         assert!(!str_json.contains("database_specific"));
     }
 
-    
+
 }
