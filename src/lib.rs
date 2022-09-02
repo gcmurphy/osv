@@ -93,6 +93,26 @@ pub enum Ecosystem {
     NuGet,
     Linux,
     Debian,
+    #[serde(rename = "Debian:3.0")]
+    Debian3_0,
+    #[serde(rename = "Debian:3.1")]
+    Debian3_1,
+    #[serde(rename = "Debian:4.0")]
+    Debian4_0,
+    #[serde(rename = "Debian:5.0")]
+    Debian5_0,
+    #[serde(rename = "Debian:6.0")]
+    Debian6_0,
+    #[serde(rename = "Debian:7")]
+    Debian7,
+    #[serde(rename = "Debian:8")]
+    Debian8,
+    #[serde(rename = "Debian:9")]
+    Debian9,
+    #[serde(rename = "Debian:10")]
+    Debian10,
+    #[serde(rename = "Debian:11")]
+    Debian11,
     Hex,
     Android,
     #[serde(rename = "GitHub Actions")]
@@ -167,7 +187,8 @@ pub struct Affected {
 
     /// The range of versions or git commits that this vulnerability
     /// was first introduced and/or version that it was fixed in.
-    pub ranges: Vec<Range>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ranges: Option<Vec<Range>>,
 
     /// Each string is a single affected version in whatever version syntax is
     /// used by the given package ecosystem.
@@ -629,20 +650,20 @@ mod tests {
     #[async_std::test]
     async fn test_no_serialize_null_fields() {
         let vuln = Vulnerability {
-          schema_version: "1.3.0".to_string(),
-          id: "OSV-2020-484".to_string(),
-          published: chrono::Utc::now(),
-          modified: chrono::Utc::now(),
-          withdrawn: None,
-          aliases: None,
-          related: None,
-          summary: None,
-          details: None,
-          affected: vec![],
-          references: None,
-          severity: None,
-          credits: None,
-          database_specific: None
+            schema_version: "1.3.0".to_string(),
+            id: "OSV-2020-484".to_string(),
+            published: chrono::Utc::now(),
+            modified: chrono::Utc::now(),
+            withdrawn: None,
+            aliases: None,
+            related: None,
+            summary: None,
+            details: None,
+            affected: vec![],
+            references: None,
+            severity: None,
+            credits: None,
+            database_specific: None,
         };
 
         let as_json = serde_json::json!(vuln);
@@ -657,6 +678,4 @@ mod tests {
         assert!(!str_json.contains("credits"));
         assert!(!str_json.contains("database_specific"));
     }
-
-
 }
