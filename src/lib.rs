@@ -124,6 +124,7 @@ pub enum Ecosystem {
 /// specific value, semver, or a git commit hash.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
+#[non_exhaustive]
 pub enum RangeType {
     /// Default for the case where a range type is omitted.
     Unspecified,
@@ -214,6 +215,7 @@ pub struct Affected {
 /// fix.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
+#[non_exhaustive]
 pub enum ReferenceType {
     #[serde(rename = "NONE")]
     Undefined,
