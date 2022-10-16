@@ -240,6 +240,7 @@ pub struct Reference {
 /// The [`SeverityType`](SeverityType) describes the quantitative scoring method used to rate the
 /// severity of the vulnerability.
 #[derive(Debug, Serialize, Deserialize)]
+#[non_exhaustive]
 pub enum SeverityType {
     /// The severity score was arrived at by using an unspecified
     /// scoring method.
@@ -251,6 +252,9 @@ pub enum SeverityType {
     /// >= 3.0 and < 4.0 (e.g.`"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:N/A:N"`).
     #[serde(rename = "CVSS_V3")]
     CVSSv3,
+
+    #[serde(rename = "CVSS_V2")]
+    CVSSv2,
 }
 
 /// The type and score used to describe the severity of a vulnerability using one
