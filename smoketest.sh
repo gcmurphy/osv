@@ -27,7 +27,8 @@ download() {
             echo "$subdir" | \
             sed -e 's/gs.*osv-vulnerabilities//' \
                 -e 's/\///g' \
-                -e 's/:/_/'
+                -e 's/:/_/' \
+                -e 's/ /_/'
         )
         mkdir -p "$(pwd)/testdata/$target"
         gsutil cp "${subdir}all.zip" "$(pwd)/testdata/$target"
@@ -48,8 +49,6 @@ build(){
 
 find_bugs(){
     fd -e json \
-        --exclude testdata/GSD \
-        --exclude testdata/DWF \
         --exclude testdata/JavaScript \
         --full-path ./testdata \
         -x ./target/debug/examples/parse | grep -v pass

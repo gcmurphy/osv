@@ -118,6 +118,40 @@ pub enum Ecosystem {
     #[serde(rename = "GitHub Actions")]
     GitHubActions,
     Pub,
+    Alpine,
+    #[serde(rename = "Alpine:v3.10")]
+    AlpineV3_10,
+    #[serde(rename = "Alpine:v3.11")]
+    AlpineV3_11,
+    #[serde(rename = "Alpine:v3.12")]
+    AlpineV3_12,
+    #[serde(rename = "Alpine:v3.13")]
+    AlpineV3_13,
+    #[serde(rename = "Alpine:v3.14")]
+    AlpineV3_14,
+    #[serde(rename = "Alpine:v3.15")]
+    AlpineV3_15,
+    #[serde(rename = "Alpine:v3.16")]
+    AlpineV3_16,
+    #[serde(rename = "Alpine:v3.2")]
+    AlpineV3_2,
+    #[serde(rename = "Alpine:v3.3")]
+    AlpineV3_3,
+    #[serde(rename = "Alpine:v3.4")]
+    AlpineV3_4,
+    #[serde(rename = "Alpine:v3.5")]
+    AlpineV3_5,
+    #[serde(rename = "Alpine:v3.6")]
+    AlpineV3_6,
+    #[serde(rename = "Alpine:v3.7")]
+    AlpineV3_7,
+    #[serde(rename = "Alpine:v3.8")]
+    AlpineV3_8,
+    #[serde(rename = "Alpine:v3.9")]
+    AlpineV3_9,
+    DWF,
+    GSD,
+    UVI,
 }
 
 /// Type of the affected range supplied. This can be an ecosystem

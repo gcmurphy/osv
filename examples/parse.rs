@@ -13,7 +13,7 @@ async fn main() -> Result<(), osv::ApiError> {
         let path: &str = arg.as_str();
         let file = fs::File::open(path).unwrap();
         let _vuln: osv::Vulnerability =
-            serde_json::from_reader(file).expect(&format!("fail: {}", path));
+            serde_json::from_reader(file).unwrap_or_else(|_| panic!("fail: {}", path));
         println!("pass: {}", path);
     }
     Ok(())
