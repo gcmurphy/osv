@@ -153,6 +153,10 @@ pub enum Event {
     /// The version which the vulnerability was fixed.
     Fixed(String),
 
+    /// Describes the last known affected version
+    #[serde(rename = "last_affected")]
+    LastAffected(String),
+
     /// The upper limit on the range being described.
     Limit(String),
 }
