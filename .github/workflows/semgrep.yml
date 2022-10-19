@@ -16,4 +16,4 @@ jobs:
             p/security-audit
             p/secrets
             p/supply-chain
-						p/rust
+            p/rust
