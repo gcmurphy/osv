@@ -3,6 +3,7 @@ name = "osv"
 version = "0.1.2"
 edition = "2021"
 authors = ["Grant Murphy <gcmurphy@pm.me>"]
+repository = "https://github.com/gcmurphy/osv"
 documentation = "https://docs.rs/osv" 
 description = "Rust client library for the osv API"
 readme = "README.md"
