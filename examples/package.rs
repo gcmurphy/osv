@@ -1,10 +1,11 @@
 use comfy_table::Table;
-use osv::Ecosystem::PyPI;
+use osv::client;
+use osv::schema::Ecosystem::PyPI;
 use textwrap::termwidth;
 
 #[async_std::main]
-async fn main() -> Result<(), osv::ApiError> {
-    if let Some(vulns) = osv::query_package("jinja2", "2.4.1", PyPI).await? {
+async fn main() -> Result<(), client::ApiError> {
+    if let Some(vulns) = client::query_package("jinja2", "2.4.1", PyPI).await? {
         let default = String::from("-");
         let linewrap = (termwidth() as f32 / 3.0 * 2.0).round() as usize;
         let mut table = Table::new();
