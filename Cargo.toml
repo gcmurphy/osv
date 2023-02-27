@@ -23,3 +23,29 @@ url = "2.3.1"
 [dev-dependencies]
 comfy-table = "5.0.1"
 textwrap = { version = "0.15.0", features = ["default", "terminal_size"] }
+
+[features]
+default = ["schema"]
+schema = []
+client = ["schema"]
+search = []
+
+[[example]]
+name = "commit"
+path = "examples/commit.rs"
+required-features = ["client"]
+
+[[example]]
+name = "package"
+path = "examples/package.rs"
+required-features = ["client"]
+
+[[example]]
+name = "parse"
+path = "examples/parse.rs"
+required-features = ["client"]
+
+[[example]]
+name = "vulnerability"
+path = "examples/vulnerability.rs"
+required-features = ["client"]
