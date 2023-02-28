@@ -69,6 +69,7 @@ pub enum Ecosystem {
     #[serde(rename = "GitHub Actions")]
     GitHubActions,
     Pub,
+    ConanCenter,
     Alpine,
     #[serde(rename = "Alpine:v3.10")]
     AlpineV3_10,
@@ -175,6 +176,13 @@ pub struct Affected {
     /// The package that is affected by the vulnerability
     pub package: Package,
 
+    /// This `severity` field applies to a specific package, in cases where affected
+    /// packages have differing severities for the same vulnerability. If any package
+    /// level `severity` fields are set, the top level [`severity`](#severity-field)
+    /// must not be set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<Severity>,
+
     /// The range of versions or git commits that this vulnerability
     /// was first introduced and/or version that it was fixed in.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -244,6 +252,9 @@ pub enum SeverityType {
     #[serde(rename = "CVSS_V3")]
     CVSSv3,
 
+    /// A CVSS vector string representing the unique characteristics and severity of the vulnerability
+    /// using a version of the [Common Vulnerability Scoring System notation](https://www.first.org/cvss/v2/)
+    /// that is == 2.0 (e.g.`"AV:L/AC:M/Au:N/C:N/I:P/A:C"`).
     #[serde(rename = "CVSS_V2")]
     CVSSv2,
 }
@@ -262,12 +273,55 @@ pub struct Severity {
     pub score: String,
 }
 
+/// The [`CreditType`](CreditType) this optional field should specify
+/// the type or role of the individual or entity being credited.
+///
+/// These values and their definitions correspond directly to the [MITRE CVE specification](https://cveproject.github.io/cve-schema/schema/v5.0/docs/#collapseDescription_oneOf_i0_containers_cna_credits_items_type).
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+#[non_exhaustive]
+pub enum CreditType {
+    /// Identified the vulnerability
+    Finder,
+
+    /// Notified the vendor of the vulnerability to a CNA.
+    Reporter,
+
+    /// Validated the vulnerability to ensure accruacy or severity.
+    Analyst,
+
+    /// Facilitated the corredinated response process.
+    Coordinator,
+
+    /// Prepared a code change or other remediation plans.
+    RemediationDeveloper,
+
+    /// Reviewed vulnerability remediation plans or code changes
+    /// for effectiveness and completeness.
+    RemediationReviewer,
+
+    /// Tested and verified the vulnerability or its remediation.
+    RemediationVerifier,
+
+    /// Names of tools used in vulnerability discovery or identification.
+    Tool,
+
+    /// Supported the vulnerability identification or remediation activities.
+    Sponsor,
+
+    /// Any other type or role that does not fall under the categories
+    /// described above.
+    Other,
+}
+
 /// Provides a way to give credit for the discovery, confirmation, patch or other events in the
 /// life cycle of a vulnerability.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Credit {
     pub name: String,
     pub contact: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub credit_type: Option<CreditType>,
 }
 
 /// A vulnerability is the standard exchange format that is
@@ -357,8 +411,8 @@ pub struct Vulnerability {
 mod tests {
     use super::*;
 
-    #[async_std::test]
-    async fn test_no_serialize_null_fields() {
+    #[test]
+    fn test_no_serialize_null_fields() {
         let vuln = Vulnerability {
             schema_version: "1.3.0".to_string(),
             id: "OSV-2020-484".to_string(),

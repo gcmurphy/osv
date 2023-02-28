@@ -1,4 +1,3 @@
-
 #[cfg(feature = "schema")]
 pub mod schema;
 
