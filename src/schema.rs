@@ -107,6 +107,9 @@ pub enum Ecosystem {
     DWF,
     GSD,
     UVI,
+    #[serde(rename = "Rocky Linux")]
+    RockyLinux,
+    AlmaLinux,
 }
 
 /// Type of the affected range supplied. This can be an ecosystem
