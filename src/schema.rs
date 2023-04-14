@@ -33,6 +33,7 @@ pub enum Ecosystem {
     Go,
     #[serde(rename = "npm")]
     Npm,
+    JavaScript,
     #[serde(rename = "OSS-Fuzz")]
     OssFuzz,
     PyPI,
@@ -85,6 +86,8 @@ pub enum Ecosystem {
     AlpineV3_15,
     #[serde(rename = "Alpine:v3.16")]
     AlpineV3_16,
+    #[serde(rename = "Alpine:v3.17")]
+    AlpineV3_17,
     #[serde(rename = "Alpine:v3.2")]
     AlpineV3_2,
     #[serde(rename = "Alpine:v3.3")]
@@ -319,7 +322,8 @@ pub enum CreditType {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Credit {
     pub name: String,
-    pub contact: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contact: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub credit_type: Option<CreditType>,
 }
