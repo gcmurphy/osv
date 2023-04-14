@@ -1,4 +1,5 @@
 target/
 debug/
 Cargo.lock
+testdata/
 
