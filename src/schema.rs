@@ -225,6 +225,10 @@ pub enum ReferenceType {
     Fix,
     Package,
     Article,
+    Detection,
+    Introduced,
+    Evidence,
+    Git,
 }
 
 /// Reference to additional information about the vulnerability.
