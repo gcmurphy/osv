@@ -15,7 +15,7 @@ async fn main() -> Result<(), client::ApiError> {
         let path: &str = arg.as_str();
         let file = fs::File::open(path).unwrap();
         let _vuln: osv::schema::Vulnerability =
-            serde_json::from_reader(file).unwrap_or_else(|_| panic!("fail: {}", path));
+            serde_json::from_reader(file).unwrap_or_else(|e| panic!("fail: {} ({:?})", path, e));
         println!("pass: {}", path);
     }
     Ok(())
