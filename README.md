@@ -14,11 +14,11 @@
 
 ### About 
 
-https://osv.dev is a vulnerability database and triage infrastructure
-for open source projects. This library provides bindings to osv 
-API to allow usage from the Rust language.
+This library provides bindings to Open Source Security Foundation's
+Open Source Vulnerability (osv) schema and a client to access
+the API from the Rust Language.
 
-Currently compatible with v1.3.0 of the ossf/osv-schema.
+Currently compatible with v1.4.0 of the [ossf/osv-schema](https://github.com/ossf/osv-schema).
 
 ### References
 
