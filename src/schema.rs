@@ -27,7 +27,7 @@ pub type Version = String;
 
 /// The package ecosystem that the vulnerabilities in the OSV database
 /// are associated with.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Clone, Copy)]
 #[non_exhaustive]
 pub enum Ecosystem {
     Go,
