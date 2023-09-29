@@ -37,6 +37,7 @@ pub enum Ecosystem {
     #[serde(rename = "OSS-Fuzz")]
     OssFuzz,
     PyPI,
+    Python,
     RubyGems,
     #[serde(rename = "crates.io")]
     CratesIO,
@@ -110,6 +111,15 @@ pub enum Ecosystem {
     #[serde(rename = "Rocky Linux")]
     RockyLinux,
     AlmaLinux,
+    Hackage,
+    GHC,
+    #[serde(rename = "Photon OS")]
+    PhotonOS,
+    Bitnami,
+    CRAN,
+    Bioconductor,
+    SwiftURL
+
 }
 
 /// Type of the affected range supplied. This can be an ecosystem
