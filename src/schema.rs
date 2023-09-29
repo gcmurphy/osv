@@ -222,16 +222,40 @@ pub struct Affected {
 pub enum ReferenceType {
     #[serde(rename = "NONE")]
     Undefined,
+
+    /// A web page of some unspecified kind.
     Web,
+
+    /// A published security advisory for the vulnerability.
     Advisory,
+
+    /// A report, typically on a bug or issue tracker, of the vulnerability.
     Report,
+
+    /// A source code browser link to the fix.
     Fix,
+
+    /// A home web page for the package.
     Package,
+
+    /// An article or blog post describing the vulnerability.
     Article,
+
+    /// A tool, script, scanner, or other mechanism that allows for detection
+    /// of the vulnerability in production environments
     Detection,
+
+    /// A source code browser link to the introduction of the vulnerability.
     Introduced,
+
+    /// A demonstration of the validity of a vulnerability claim
     Evidence,
+
+    /// Git commit hash or range where the issue occurred
     Git,
+
+    /// A social media discussion regarding the vulnerability.
+    Discussion,
 }
 
 /// Reference to additional information about the vulnerability.
