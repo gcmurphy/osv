@@ -10,6 +10,8 @@ readme = "README.md"
 license = "Apache-2.0"
 keywords = ["vulnerabilities", "security", "osv"]
 
+[package.metadata.docs.rs]
+all-features = true
 
 [dependencies]
 async-std = { version = "1.12.0", features = ["attributes"], optional = true }
