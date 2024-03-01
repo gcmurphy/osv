@@ -20,6 +20,7 @@ ensure_exists() {
 }
 
 download() {
+    echo "Downloading vulnerability data.."
     buckets=$(gsutil ls gs://osv-vulnerabilities | grep -v ecosystems.txt)
     for subdir in $buckets
     do
@@ -36,27 +37,23 @@ download() {
 }
 
 extract() {
-    for zipfile in $(fd all.zip)
-    do 
-        target=$(dirname "$zipfile")
-        unzip -d "$target" "$zipfile"
-    done
+    echo "Extracting vulnerability data.."
+    find ./testdata -type f -name all.zip | parallel --bar unzip -d {.} {}
 }
 
 build(){
-    cargo run --example parse 2>/dev/null
+    echo "Building parse example.."
+    cargo run --features=client --example parse > /dev/null 2>&1
 }
 
 find_bugs(){
-    fd -e json \
-        --exclude testdata/JavaScript \
-        --full-path ./testdata \
-        -x ./target/debug/examples/parse | grep -v pass
+    echo "Searching for files that cannot be parsed.."
+    find ./testdata -type f -name \*.json | parallel --bar ./target/debug/examples/parse {} | grep -v pass
 }
 
 main(){
     ensure_exists gsutil
-    ensure_exists fd
+    ensure_exists parallel
     mkdir -p testdata
     download
     extract
