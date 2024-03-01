@@ -89,6 +89,10 @@ pub enum Ecosystem {
     AlpineV3_16,
     #[serde(rename = "Alpine:v3.17")]
     AlpineV3_17,
+    #[serde(rename = "Alpine:v3.18")]
+    AlpineV3_18,
+    #[serde(rename = "Alpine:v3.19")]
+    AlpineV3_19,
     #[serde(rename = "Alpine:v3.2")]
     AlpineV3_2,
     #[serde(rename = "Alpine:v3.3")]
@@ -190,7 +194,8 @@ pub struct Range {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Affected {
     /// The package that is affected by the vulnerability
-    pub package: Package,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub package: Option<Package>,
 
     /// This `severity` field applies to a specific package, in cases where affected
     /// packages have differing severities for the same vulnerability. If any package
