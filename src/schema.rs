@@ -202,7 +202,7 @@ pub struct Affected {
     /// level `severity` fields are set, the top level [`severity`](#severity-field)
     /// must not be set.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub severity: Option<Severity>,
+    pub severity: Option<Vec<Severity>>,
 
     /// The range of versions or git commits that this vulnerability
     /// was first introduced and/or version that it was fixed in.
