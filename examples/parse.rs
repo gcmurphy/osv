@@ -4,7 +4,7 @@ use std::process;
 
 use osv::client;
 
-#[async_std::main]
+#[tokio::main]
 async fn main() -> Result<(), client::ApiError> {
     let args: Vec<String> = env::args().skip(1).collect();
     if args.len() <= 0 {
