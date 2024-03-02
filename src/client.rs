@@ -113,8 +113,8 @@ impl From<reqwest::Error> for ApiError {
 /// # Examples
 ///
 /// ```
-/// # use tokio::task;
-/// # task::block_on(async {
+/// # use tokio_test;
+/// # tokio_test::block_on(async {
 /// let ver = osv::schema::Version::from("2.4.1");
 /// let pkg = "jinja2".to_string();
 /// let req = osv::client::Request::PackageQuery {
@@ -177,8 +177,8 @@ pub async fn query(q: &Request) -> Result<Option<Vec<Vulnerability>>, ApiError> 
 /// ```
 /// use osv::client::query_package;
 /// use osv::schema::Ecosystem::PyPI;
-/// # use tokio::task;
-/// # task::block_on(async {
+/// # use tokio_test;
+/// # tokio_test::block_on(async {
 ///     let pkg = "jinja2";
 ///     let ver = "2.4.1";
 ///     if let Some(vulns) = query_package(pkg, ver, PyPI).await.unwrap() {
@@ -220,9 +220,9 @@ pub async fn query_package(
 /// # Examples
 ///
 /// ```
-/// # use async_std::task;
 /// # use osv::client::query_commit;
-/// # task::block_on(async {
+/// # use tokio_test;
+/// # tokio_test::block_on(async {
 /// let vulnerable = query_commit("6879efc2c1596d11a6a6ad296f80063b558d5e0f")
 ///         .await
 ///         .expect("api error");
@@ -247,9 +247,10 @@ pub async fn query_commit(commit: &str) -> Result<Option<Vec<Vulnerability>>, Ap
 /// # Examples
 ///
 /// ```
-/// # use async_std::task;
+/// # use tokio::task;
 /// use osv::client::vulnerability;
-/// # task::block_on(async {
+/// # use tokio_test;
+/// # tokio_test::block_on(async {
 /// let vuln = vulnerability("OSV-2020-484").await.unwrap();
 /// assert!(vuln.id.eq("OSV-2020-484"));
 ///
@@ -271,7 +272,7 @@ pub async fn vulnerability(vuln_id: &str) -> Result<Vulnerability, ApiError> {
 mod tests {
     use super::*;
 
-    #[async_std::test]
+    #[tokio::test]
     async fn test_package_query() {
         let req = Request::PackageQuery {
             version: Version::from("2.4.1"),
@@ -285,7 +286,7 @@ mod tests {
         assert!(res.is_some());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     async fn test_package_query_wrapper() {
         let res = query_package("jinja2", "2.4.1", Ecosystem::PyPI)
             .await
@@ -293,7 +294,7 @@ mod tests {
         assert!(res.is_some());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     async fn test_invalid_packagename() {
         let res = query_package(
             "asdfasdlfkjlksdjfklsdjfklsdjfklds",
@@ -305,7 +306,7 @@ mod tests {
         assert!(res.is_none());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     async fn test_commit_query() {
         let req = Request::CommitQuery {
             commit: Commit::from("6879efc2c1596d11a6a6ad296f80063b558d5e0f"),
@@ -314,7 +315,7 @@ mod tests {
         assert!(res.is_some());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     async fn test_commit_query_wrapper() {
         let res = query_commit("6879efc2c1596d11a6a6ad296f80063b558d5e0f")
             .await
@@ -322,19 +323,19 @@ mod tests {
         assert!(res.is_some());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     async fn test_invalid_commit() {
         let res = query_commit("zzzz").await.unwrap();
         assert!(res.is_none());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     async fn test_vulnerability() {
         let res = vulnerability("OSV-2020-484").await;
         assert!(res.is_ok());
     }
 
-    #[async_std::test]
+    #[tokio::test]
     async fn test_get_missing_cve() {
         let res = vulnerability("CVE-2014-0160").await;
         assert!(res.is_err());
