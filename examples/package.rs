@@ -3,7 +3,7 @@ use osv::client;
 use osv::schema::Ecosystem::PyPI;
 use textwrap::termwidth;
 
-#[async_std::main]
+#[tokio::main]
 async fn main() -> Result<(), client::ApiError> {
     if let Some(vulns) = client::query_package("jinja2", "2.4.1", PyPI).await? {
         let default = String::from("-");

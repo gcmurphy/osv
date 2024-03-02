@@ -22,7 +22,7 @@
 //! use osv::schema::Ecosystem::PyPI;
 //! use textwrap::termwidth;
 //!
-//! #[async_std::main]
+//! #[tokio::main]
 //! async fn main() -> Result<(), osv::client::ApiError> {
 //!
 //!    if let Some(vulns) = osv::client::query_package("jinja2", "2.4.1", PyPI).await? {
@@ -45,7 +45,7 @@
 
 use super::schema::*;
 use serde::{Deserialize, Serialize};
-use surf::http::StatusCode;
+use reqwest::StatusCode;
 use thiserror::Error;
 use url::Url;
 
@@ -86,14 +86,14 @@ pub enum ApiError {
     SerializationError(#[from] serde_json::Error),
 
     #[error("request to osv endpoint failed: {0:?}")]
-    RequestFailed(surf::Error),
+    RequestFailed(reqwest::Error),
 
     #[error("unexpected error has occurred")]
     Unexpected,
 }
 
-impl From<surf::Error> for ApiError {
-    fn from(err: surf::Error) -> Self {
+impl From<reqwest::Error> for ApiError {
+    fn from(err: reqwest::Error) -> Self {
         ApiError::RequestFailed(err)
     }
 }
@@ -113,7 +113,7 @@ impl From<surf::Error> for ApiError {
 /// # Examples
 ///
 /// ```
-/// # use async_std::task;
+/// # use tokio::task;
 /// # task::block_on(async {
 /// let ver = osv::schema::Version::from("2.4.1");
 /// let pkg = "jinja2".to_string();
@@ -133,12 +133,14 @@ impl From<surf::Error> for ApiError {
 ///
 ///
 pub async fn query(q: &Request) -> Result<Option<Vec<Vulnerability>>, ApiError> {
-    let mut res = surf::post("https://api.osv.dev/v1/query")
-        .body_json(q)?
+    let client = reqwest::Client::new();
+    let res = client.post("https://api.osv.dev/v1/query")
+        .json(q)
+        .send()
         .await?;
 
     match res.status() {
-        StatusCode::NotFound => {
+        StatusCode::NOT_FOUND => {
             let err = match q {
                 Request::PackageQuery {
                     version: _,
@@ -153,7 +155,7 @@ pub async fn query(q: &Request) -> Result<Option<Vec<Vulnerability>>, ApiError> 
             Err(ApiError::NotFound(err))
         }
         _ => {
-            let vulns: Response = res.body_json().await?;
+            let vulns: Response = res.json().await?;
             match vulns {
                 Response::Vulnerabilities { vulns: vs } => Ok(Some(vs)),
                 _ => Ok(None),
@@ -175,7 +177,7 @@ pub async fn query(q: &Request) -> Result<Option<Vec<Vulnerability>>, ApiError> 
 /// ```
 /// use osv::client::query_package;
 /// use osv::schema::Ecosystem::PyPI;
-/// # use async_std::task;
+/// # use tokio::task;
 /// # task::block_on(async {
 ///     let pkg = "jinja2";
 ///     let ver = "2.4.1";
@@ -256,11 +258,11 @@ pub async fn query_commit(commit: &str) -> Result<Option<Vec<Vulnerability>>, Ap
 pub async fn vulnerability(vuln_id: &str) -> Result<Vulnerability, ApiError> {
     let base = Url::parse("https://api.osv.dev/v1/vulns/")?;
     let req = base.join(vuln_id)?;
-    let mut res = surf::get(req.as_str()).await?;
-    if res.status() == StatusCode::NotFound {
+    let res = reqwest::get(req.as_str()).await?;
+    if res.status() == StatusCode::NOT_FOUND {
         Err(ApiError::NotFound(vuln_id.to_string()))
     } else {
-        let vuln: Vulnerability = res.body_json().await?;
+        let vuln: Vulnerability = res.json().await?;
         Ok(vuln)
     }
 }
