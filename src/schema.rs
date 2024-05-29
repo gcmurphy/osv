@@ -390,7 +390,7 @@ pub struct Credit {
 pub struct Vulnerability {
     /// The schema_version field is used to indicate which version of the OSV schema a particular
     /// vulnerability was exported with.
-    pub schema_version: String,
+    pub schema_version: Option<String>,
     /// The id field is a unique identifier for the vulnerability entry. It is a string of the
     /// format <DB>-<ENTRYID>, where DB names the database and ENTRYID is in the format used by the
     /// database. For example: “OSV-2020-111”, “CVE-2021-3114”, or “GHSA-vp9c-fpxx-744v”.
@@ -470,7 +470,7 @@ mod tests {
     #[test]
     fn test_no_serialize_null_fields() {
         let vuln = Vulnerability {
-            schema_version: "1.3.0".to_string(),
+            schema_version: Some("1.3.0".to_string()),
             id: "OSV-2020-484".to_string(),
             published: chrono::Utc::now(),
             modified: chrono::Utc::now(),
