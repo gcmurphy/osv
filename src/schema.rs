@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use serde::de::{self, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 /// Package identifies the code library or command that
 /// is potentially affected by a particular vulnerability.
 #[derive(Debug, Serialize, Deserialize)]
@@ -27,103 +28,165 @@ pub type Version = String;
 
 /// The package ecosystem that the vulnerabilities in the OSV database
 /// are associated with.
-#[derive(Debug, Serialize, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Clone, Copy)]
+#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd, Clone)]
 #[non_exhaustive]
 pub enum Ecosystem {
     Go,
-    #[serde(rename = "npm")]
     Npm,
     JavaScript,
-    #[serde(rename = "OSS-Fuzz")]
     OssFuzz,
     PyPI,
     Python,
     RubyGems,
-    #[serde(rename = "crates.io")]
     CratesIO,
     Packagist,
-    Maven,
+    Maven(String),
     NuGet,
     Linux,
-    Debian,
-    #[serde(rename = "Debian:3.0")]
-    Debian3_0,
-    #[serde(rename = "Debian:3.1")]
-    Debian3_1,
-    #[serde(rename = "Debian:4.0")]
-    Debian4_0,
-    #[serde(rename = "Debian:5.0")]
-    Debian5_0,
-    #[serde(rename = "Debian:6.0")]
-    Debian6_0,
-    #[serde(rename = "Debian:7")]
-    Debian7,
-    #[serde(rename = "Debian:8")]
-    Debian8,
-    #[serde(rename = "Debian:9")]
-    Debian9,
-    #[serde(rename = "Debian:10")]
-    Debian10,
-    #[serde(rename = "Debian:11")]
-    Debian11,
+    Debian(Option<String>),
     Hex,
     Android,
-    #[serde(rename = "GitHub Actions")]
     GitHubActions,
     Pub,
     ConanCenter,
-    Alpine,
-    #[serde(rename = "Alpine:v3.10")]
-    AlpineV3_10,
-    #[serde(rename = "Alpine:v3.11")]
-    AlpineV3_11,
-    #[serde(rename = "Alpine:v3.12")]
-    AlpineV3_12,
-    #[serde(rename = "Alpine:v3.13")]
-    AlpineV3_13,
-    #[serde(rename = "Alpine:v3.14")]
-    AlpineV3_14,
-    #[serde(rename = "Alpine:v3.15")]
-    AlpineV3_15,
-    #[serde(rename = "Alpine:v3.16")]
-    AlpineV3_16,
-    #[serde(rename = "Alpine:v3.17")]
-    AlpineV3_17,
-    #[serde(rename = "Alpine:v3.18")]
-    AlpineV3_18,
-    #[serde(rename = "Alpine:v3.19")]
-    AlpineV3_19,
-    #[serde(rename = "Alpine:v3.2")]
-    AlpineV3_2,
-    #[serde(rename = "Alpine:v3.3")]
-    AlpineV3_3,
-    #[serde(rename = "Alpine:v3.4")]
-    AlpineV3_4,
-    #[serde(rename = "Alpine:v3.5")]
-    AlpineV3_5,
-    #[serde(rename = "Alpine:v3.6")]
-    AlpineV3_6,
-    #[serde(rename = "Alpine:v3.7")]
-    AlpineV3_7,
-    #[serde(rename = "Alpine:v3.8")]
-    AlpineV3_8,
-    #[serde(rename = "Alpine:v3.9")]
-    AlpineV3_9,
+    Alpine(Option<String>),
     DWF,
     GSD,
     UVI,
-    #[serde(rename = "Rocky Linux")]
     RockyLinux,
     AlmaLinux,
     Hackage,
     GHC,
-    #[serde(rename = "Photon OS")]
     PhotonOS,
     Bitnami,
     CRAN,
     Bioconductor,
     SwiftURL,
     Ubuntu,
+}
+
+impl Serialize for Ecosystem {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Ecosystem::Go => serializer.serialize_str("Go"),
+            Ecosystem::Npm => serializer.serialize_str("npm"),
+            Ecosystem::JavaScript => serializer.serialize_str("JavaScript"),
+            Ecosystem::OssFuzz => serializer.serialize_str("OSS-Fuzz"),
+            Ecosystem::PyPI => serializer.serialize_str("PyPI"),
+            Ecosystem::Python => serializer.serialize_str("Python"),
+            Ecosystem::RubyGems => serializer.serialize_str("RubyGems"),
+            Ecosystem::CratesIO => serializer.serialize_str("crates.io"),
+            Ecosystem::Packagist => serializer.serialize_str("Packagist"),
+            Ecosystem::Maven(repository) => {
+                let mvn: String = match repository.as_str() {
+                    "https://repo.maven.apache.org/maven2" => "Maven".to_string(),
+                    _ => format!("Maven:{}", repository),
+                };
+                serializer.serialize_str(&mvn)
+            }
+            Ecosystem::NuGet => serializer.serialize_str("NuGet"),
+            Ecosystem::Linux => serializer.serialize_str("Linux"),
+            Ecosystem::Debian(None) => serializer.serialize_str("Debian"),
+            Ecosystem::Debian(Some(version)) => {
+                serializer.serialize_str(&format!("Debian:{}", version))
+            }
+            Ecosystem::Hex => serializer.serialize_str("Hex"),
+            Ecosystem::Android => serializer.serialize_str("Android"),
+            Ecosystem::GitHubActions => serializer.serialize_str("GitHub Actions"),
+            Ecosystem::Pub => serializer.serialize_str("Pub"),
+            Ecosystem::ConanCenter => serializer.serialize_str("ConanCenter"),
+            Ecosystem::Alpine(None) => serializer.serialize_str("Alpine"),
+            Ecosystem::Alpine(Some(version)) => {
+                serializer.serialize_str(&format!("Alpine:{}", version))
+            }
+            Ecosystem::DWF => serializer.serialize_str("DWF"),
+            Ecosystem::GSD => serializer.serialize_str("GSD"),
+            Ecosystem::UVI => serializer.serialize_str("UVI"),
+            Ecosystem::RockyLinux => serializer.serialize_str("Rocky Linux"),
+            Ecosystem::AlmaLinux => serializer.serialize_str("AlmaLinux"),
+            Ecosystem::Hackage => serializer.serialize_str("Hackage"),
+            Ecosystem::GHC => serializer.serialize_str("GHC"),
+            Ecosystem::PhotonOS => serializer.serialize_str("Photon OS"),
+            Ecosystem::Bitnami => serializer.serialize_str("Bitnami"),
+            Ecosystem::CRAN => serializer.serialize_str("CRAN"),
+            Ecosystem::Bioconductor => serializer.serialize_str("Bioconductor"),
+            Ecosystem::SwiftURL => serializer.serialize_str("SwiftURL"),
+            Ecosystem::Ubuntu => serializer.serialize_str("Ubuntu"),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Ecosystem {
+    fn deserialize<D>(deserializer: D) -> Result<Ecosystem, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct EcosystemVisitor;
+
+        impl<'de> Visitor<'de> for EcosystemVisitor {
+            type Value = Ecosystem;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a valid string representing an ecosystem")
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<Ecosystem, E>
+            where
+                E: de::Error,
+            {
+                match value {
+                    "Go" => Ok(Ecosystem::Go),
+                    "npm" => Ok(Ecosystem::Npm),
+                    "JavaScript" => Ok(Ecosystem::JavaScript),
+                    "OSS-Fuzz" => Ok(Ecosystem::OssFuzz),
+                    "PyPI" => Ok(Ecosystem::PyPI),
+                    "Python" => Ok(Ecosystem::Python),
+                    "RubyGems" => Ok(Ecosystem::RubyGems),
+                    "crates.io" => Ok(Ecosystem::CratesIO),
+                    "Packagist" => Ok(Ecosystem::Packagist),
+                    "Maven" | "Maven:" => Ok(Ecosystem::Maven(
+                        "https://repo.maven.apache.org/maven2".to_string(),
+                    )),
+                    _ if value.starts_with("Maven:") => Ok(Ecosystem::Maven(
+                        value.strip_prefix("Maven:").map(|v| v.to_string()).unwrap(),
+                    )),
+                    "NuGet" => Ok(Ecosystem::NuGet),
+                    "Linux" => Ok(Ecosystem::Linux),
+                    "Debian" => Ok(Ecosystem::Debian(None)),
+                    _ if value.starts_with("Debian:") => Ok(Ecosystem::Debian(
+                        value.strip_prefix("Debian:").map(|v| v.to_string()),
+                    )),
+                    "Hex" => Ok(Ecosystem::Hex),
+                    "Android" => Ok(Ecosystem::Android),
+                    "GitHub Actions" => Ok(Ecosystem::GitHubActions),
+                    "Pub" => Ok(Ecosystem::Pub),
+                    "ConanCenter" => Ok(Ecosystem::ConanCenter),
+                    "Alpine" => Ok(Ecosystem::Alpine(None)),
+                    _ if value.starts_with("Alpine:") => Ok(Ecosystem::Alpine(
+                        value.strip_prefix("Alpine:").map(|v| v.to_string()),
+                    )),
+                    "DWF" => Ok(Ecosystem::DWF),
+                    "GSD" => Ok(Ecosystem::GSD),
+                    "UVI" => Ok(Ecosystem::UVI),
+                    "Rocky Linux" => Ok(Ecosystem::RockyLinux),
+                    "AlmaLinux" => Ok(Ecosystem::AlmaLinux),
+                    "Hackage" => Ok(Ecosystem::Hackage),
+                    "GHC" => Ok(Ecosystem::GHC),
+                    "Photon OS" => Ok(Ecosystem::PhotonOS),
+                    "Bitnami" => Ok(Ecosystem::Bitnami),
+                    "CRAN" => Ok(Ecosystem::CRAN),
+                    "Bioconductor" => Ok(Ecosystem::Bioconductor),
+                    "SwiftURL" => Ok(Ecosystem::SwiftURL),
+                    "Ubuntu" => Ok(Ecosystem::Ubuntu),
+                    _ => Err(de::Error::unknown_variant(value, &["Ecosystem"])),
+                }
+            }
+        }
+        deserializer.deserialize_str(EcosystemVisitor)
+    }
 }
 
 /// Type of the affected range supplied. This can be an ecosystem
@@ -497,5 +560,33 @@ mod tests {
         assert!(!str_json.contains("severity"));
         assert!(!str_json.contains("credits"));
         assert!(!str_json.contains("database_specific"));
+    }
+
+    #[test]
+    fn test_maven_ecosystem() {
+        let maven = Ecosystem::Maven("https://repo.maven.apache.org/maven2".to_string());
+        let as_json = serde_json::json!(maven);
+        assert_eq!(as_json, serde_json::json!("Maven"));
+
+        let maven = Ecosystem::Maven("https://repo1.example.com/maven2".to_string());
+        let as_json = serde_json::json!(maven);
+        assert_eq!(
+            as_json,
+            serde_json::json!("Maven:https://repo1.example.com/maven2")
+        );
+
+        let json_str = r#""Maven""#;
+        let maven: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            maven,
+            Ecosystem::Maven("https://repo.maven.apache.org/maven2".to_string())
+        );
+
+        let json_str = r#""Maven:""#;
+        let maven: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            maven,
+            Ecosystem::Maven("https://repo.maven.apache.org/maven2".to_string())
+        );
     }
 }

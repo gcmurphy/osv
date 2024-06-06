@@ -44,8 +44,8 @@
 //! There are more examples [here](https://github.com/gcmurphy/osv/tree/master/examples) that demonstrate usage.
 
 use super::schema::*;
-use serde::{Deserialize, Serialize};
 use reqwest::StatusCode;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::Url;
 
@@ -134,7 +134,8 @@ impl From<reqwest::Error> for ApiError {
 ///
 pub async fn query(q: &Request) -> Result<Option<Vec<Vulnerability>>, ApiError> {
     let client = reqwest::Client::new();
-    let res = client.post("https://api.osv.dev/v1/query")
+    let res = client
+        .post("https://api.osv.dev/v1/query")
         .json(q)
         .send()
         .await?;
