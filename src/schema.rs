@@ -62,7 +62,11 @@ pub enum Ecosystem {
     CRAN,
     Bioconductor,
     SwiftURL,
-    Ubuntu,
+    Ubuntu {
+        version: String,
+        pro: bool,
+        lts: bool,
+    },
 }
 
 impl Serialize for Ecosystem {
@@ -114,7 +118,26 @@ impl Serialize for Ecosystem {
             Ecosystem::CRAN => serializer.serialize_str("CRAN"),
             Ecosystem::Bioconductor => serializer.serialize_str("Bioconductor"),
             Ecosystem::SwiftURL => serializer.serialize_str("SwiftURL"),
-            Ecosystem::Ubuntu => serializer.serialize_str("Ubuntu"),
+            Ecosystem::Ubuntu {
+                version: v,
+                pro: true,
+                lts: true,
+            } => serializer.serialize_str(&format!("Ubuntu:Pro:{}:LTS", v)),
+            Ecosystem::Ubuntu {
+                version: v,
+                pro: true,
+                lts: false,
+            } => serializer.serialize_str(&format!("Ubuntu:Pro:{}", v)),
+            Ecosystem::Ubuntu {
+                version: v,
+                pro: false,
+                lts: true,
+            } => serializer.serialize_str(&format!("Ubuntu:{}:LTS", v)),
+            Ecosystem::Ubuntu {
+                version: v,
+                pro: false,
+                lts: false,
+            } => serializer.serialize_str(&format!("Ubuntu:{}", v)),
         }
     }
 }
@@ -180,7 +203,52 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "CRAN" => Ok(Ecosystem::CRAN),
                     "Bioconductor" => Ok(Ecosystem::Bioconductor),
                     "SwiftURL" => Ok(Ecosystem::SwiftURL),
-                    "Ubuntu" => Ok(Ecosystem::Ubuntu),
+                    _ if value.starts_with("Ubuntu:Pro:") => {
+                        value.strip_prefix("Ubuntu:Pro:").map_or(
+                            Err(de::Error::unknown_variant(value, &["Ecosystem"])),
+                            |v| {
+                                let parts: Vec<&str> = v.split(':').collect();
+                                match parts.as_slice() {
+                                    [ver, "LTS"] => Ok(Ecosystem::Ubuntu {
+                                        version: ver.to_string(),
+                                        pro: true,
+                                        lts: true,
+                                    }),
+                                    [ver] => Ok(Ecosystem::Ubuntu {
+                                        version: ver.to_string(),
+                                        pro: true,
+                                        lts: false,
+                                    }),
+                                    _ => Err(de::Error::unknown_variant(
+                                        value,
+                                        &["Ecosystem", "Ubuntu:Pro:YY.MM:(LTS?)"],
+                                    )),
+                                }
+                            },
+                        )
+                    }
+                    _ if value.starts_with("Ubuntu:") => value.strip_prefix("Ubuntu:").map_or(
+                        Err(de::Error::unknown_variant(value, &["Ecosystem"])),
+                        |v| {
+                            let parts: Vec<&str> = v.split(':').collect();
+                            match parts.as_slice() {
+                                [ver, "LTS"] => Ok(Ecosystem::Ubuntu {
+                                    version: ver.to_string(),
+                                    pro: false,
+                                    lts: true,
+                                }),
+                                [ver] => Ok(Ecosystem::Ubuntu {
+                                    version: ver.to_string(),
+                                    pro: false,
+                                    lts: false,
+                                }),
+                                _ => Err(de::Error::unknown_variant(
+                                    value,
+                                    &["Ecosystem", "Ubuntu:YY.MM:(?LTS)"],
+                                )),
+                            }
+                        },
+                    ),
                     _ => Err(de::Error::unknown_variant(value, &["Ecosystem"])),
                 }
             }
@@ -587,6 +655,85 @@ mod tests {
         assert_eq!(
             maven,
             Ecosystem::Maven("https://repo.maven.apache.org/maven2".to_string())
+        );
+    }
+
+    #[test]
+    fn test_ubuntu_ecosystem() {
+        let ubuntu = Ecosystem::Ubuntu {
+            version: "20.04".to_string(),
+            pro: true,
+            lts: true,
+        };
+        let as_json = serde_json::json!(ubuntu);
+        assert_eq!(as_json, serde_json::json!("Ubuntu:Pro:20.04:LTS"));
+
+        let ubuntu = Ecosystem::Ubuntu {
+            version: "20.04".to_string(),
+            pro: true,
+            lts: false,
+        };
+        let as_json = serde_json::json!(ubuntu);
+        assert_eq!(as_json, serde_json::json!("Ubuntu:Pro:20.04"));
+
+        let ubuntu = Ecosystem::Ubuntu {
+            version: "20.04".to_string(),
+            pro: false,
+            lts: true,
+        };
+        let as_json = serde_json::json!(ubuntu);
+        assert_eq!(as_json, serde_json::json!("Ubuntu:20.04:LTS"));
+
+        let ubuntu = Ecosystem::Ubuntu {
+            version: "20.04".to_string(),
+            pro: false,
+            lts: false,
+        };
+        let as_json = serde_json::json!(ubuntu);
+        assert_eq!(as_json, serde_json::json!("Ubuntu:20.04"));
+
+        let json_str = r#""Ubuntu:Pro:20.04:LTS""#;
+        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            ubuntu,
+            Ecosystem::Ubuntu {
+                version: "20.04".to_string(),
+                pro: true,
+                lts: true
+            }
+        );
+
+        let json_str = r#""Ubuntu:Pro:20.04""#;
+        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            ubuntu,
+            Ecosystem::Ubuntu {
+                version: "20.04".to_string(),
+                pro: true,
+                lts: false
+            }
+        );
+
+        let json_str = r#""Ubuntu:20.04:LTS""#;
+        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            ubuntu,
+            Ecosystem::Ubuntu {
+                version: "20.04".to_string(),
+                pro: false,
+                lts: true
+            }
+        );
+
+        let json_str = r#""Ubuntu:20.04""#;
+        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            ubuntu,
+            Ecosystem::Ubuntu {
+                version: "20.04".to_string(),
+                pro: false,
+                lts: false
+            }
         );
     }
 }
