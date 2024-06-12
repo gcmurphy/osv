@@ -53,11 +53,11 @@ pub enum Ecosystem {
     DWF,
     GSD,
     UVI,
-    RockyLinux,
-    AlmaLinux,
+    RockyLinux(Option<String>),
+    AlmaLinux(Option<String>),
     Hackage,
     GHC,
-    PhotonOS,
+    PhotonOS(Option<String>),
     Bitnami,
     CRAN,
     Bioconductor,
@@ -109,11 +109,20 @@ impl Serialize for Ecosystem {
             Ecosystem::DWF => serializer.serialize_str("DWF"),
             Ecosystem::GSD => serializer.serialize_str("GSD"),
             Ecosystem::UVI => serializer.serialize_str("UVI"),
-            Ecosystem::RockyLinux => serializer.serialize_str("Rocky Linux"),
-            Ecosystem::AlmaLinux => serializer.serialize_str("AlmaLinux"),
+            Ecosystem::RockyLinux(None) => serializer.serialize_str("Rocky Linux"),
+            Ecosystem::RockyLinux(Some(release)) => {
+                serializer.serialize_str(&format!("Rocky Linux:{}", release))
+            }
+            Ecosystem::AlmaLinux(None) => serializer.serialize_str("AlmaLinux"),
+            Ecosystem::AlmaLinux(Some(release)) => {
+                serializer.serialize_str(&format!("AlmaLinux:{}", release))
+            }
             Ecosystem::Hackage => serializer.serialize_str("Hackage"),
             Ecosystem::GHC => serializer.serialize_str("GHC"),
-            Ecosystem::PhotonOS => serializer.serialize_str("Photon OS"),
+            Ecosystem::PhotonOS(None) => serializer.serialize_str("Photon OS"),
+            Ecosystem::PhotonOS(Some(release)) => {
+                serializer.serialize_str(&format!("Photon OS:{}", release))
+            }
             Ecosystem::Bitnami => serializer.serialize_str("Bitnami"),
             Ecosystem::CRAN => serializer.serialize_str("CRAN"),
             Ecosystem::Bioconductor => serializer.serialize_str("Bioconductor"),
@@ -194,11 +203,20 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "DWF" => Ok(Ecosystem::DWF),
                     "GSD" => Ok(Ecosystem::GSD),
                     "UVI" => Ok(Ecosystem::UVI),
-                    "Rocky Linux" => Ok(Ecosystem::RockyLinux),
-                    "AlmaLinux" => Ok(Ecosystem::AlmaLinux),
+                    "Rocky Linux" | "Rocky Linux:" => Ok(Ecosystem::RockyLinux(None)),
+                    _ if value.starts_with("Rocky Linux:") => Ok(Ecosystem::RockyLinux(
+                        value.strip_prefix("Rocky Linux:").map(|v| v.to_string()),
+                    )),
+                    "AlmaLinux" | "AlmaLinux:" => Ok(Ecosystem::AlmaLinux(None)),
+                    _ if value.starts_with("AlmaLinux:") => Ok(Ecosystem::AlmaLinux(
+                        value.strip_prefix("AlmaLinux:").map(|v| v.to_string()),
+                    )),
                     "Hackage" => Ok(Ecosystem::Hackage),
                     "GHC" => Ok(Ecosystem::GHC),
-                    "Photon OS" => Ok(Ecosystem::PhotonOS),
+                    "Photon OS" | "Photon OS:" => Ok(Ecosystem::PhotonOS(None)),
+                    _ if value.starts_with("Photon OS:") => Ok(Ecosystem::PhotonOS(
+                        value.strip_prefix("Photon OS:").map(|v| v.to_string()),
+                    )),
                     "Bitnami" => Ok(Ecosystem::Bitnami),
                     "CRAN" => Ok(Ecosystem::CRAN),
                     "Bioconductor" => Ok(Ecosystem::Bioconductor),
