@@ -54,9 +54,11 @@ find_bugs(){
 main(){
     ensure_exists gsutil
     ensure_exists parallel
-    mkdir -p testdata
-    download
-    extract
+    if [[ -z testdata ]]; then
+        mkdir -p testdata
+        download
+        extract
+    fi
     build
     find_bugs
 }
