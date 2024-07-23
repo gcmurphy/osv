@@ -1,4 +1,4 @@
-name: Static Analysis
+name: Static Analysis: DevSkim
 on:
   push:
     branches: [ "main" ]
@@ -6,7 +6,7 @@ on:
     branches: [ "main" ]
   schedule:
     - cron: '30 17 * * 5'
-
+permissions: read-all
 jobs:
   lint:
     name: DevSkim

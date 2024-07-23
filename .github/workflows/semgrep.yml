@@ -1,5 +1,6 @@
-name: Security Checks
+name: Static Analysis: Semgrep
 on: [pull_request]
+permissions: read-all
 jobs:
   semgrep:
     name: Static analysis (semgrep)
