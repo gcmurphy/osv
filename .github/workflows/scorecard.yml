@@ -1,10 +1,12 @@
-name: Branch Protection
+name: OSSF Scorecard
 on:
   branch_protection_rule:
   schedule:
     - cron: '23 7 * * 2'
   push:
     branches: [ "main" ]
+  workflow_dispatch:
+
 permissions: read-all
 
 jobs:
