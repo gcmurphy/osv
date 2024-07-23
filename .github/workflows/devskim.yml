@@ -6,6 +6,8 @@ on:
     branches: [ "main" ]
   schedule:
     - cron: '30 17 * * 5'
+  workflow_dispatch:
+
 permissions: read-all
 jobs:
   lint:
