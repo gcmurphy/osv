@@ -22,9 +22,8 @@ jobs:
       security-events: write
     if: (github.action != 'dependabot[bot]')
     steps:
-      - name: Semgrep Scan
-        uses: actions/checkout@v3
-        run: semgrep ci --sarif semgrep-results.sarif
+      - uses: actions/checkout@v3
+      - run: semgrep ci --sarif semgrep-results.sarif
         env:
           SEMGREP_RULES: >-
             p/security-audit
