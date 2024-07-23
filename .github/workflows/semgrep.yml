@@ -23,7 +23,7 @@ jobs:
     if: (github.action != 'dependabot[bot]')
     steps:
       - uses: actions/checkout@v3
-      - run: semgrep ci --sarif semgrep-results.sarif
+      - run: semgrep ci --sarif-output=semgrep-results.sarif
         env:
           SEMGREP_RULES: >-
             p/security-audit
