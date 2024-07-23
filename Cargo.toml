@@ -23,6 +23,9 @@ thiserror = { version = "1.0", optional = true }
 url = { version = "2.3.1", optional = true }
 
 [dev-dependencies]
+cargo-audit = "0.20.0"
+cargo-fuzz = "0.12.0"
+cargo-release = "0.25.10"
 comfy-table = "5.0.1"
 textwrap = { version = "0.15.0", features = ["default", "terminal_size"] }
 tokio-test = "0.4.3"
