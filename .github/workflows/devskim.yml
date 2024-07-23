@@ -1,4 +1,4 @@
-name: Static Analysis: DevSkim
+name: Static Analysis - DevSkim
 on:
   push:
     branches: [ "main" ]

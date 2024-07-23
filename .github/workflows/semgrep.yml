@@ -1,5 +1,12 @@
-name: Static Analysis: Semgrep
-on: [pull_request]
+name: Static Analysis - Semgrep
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '30 17 * * 5'
+
 permissions: read-all
 jobs:
   semgrep:
