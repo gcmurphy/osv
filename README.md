@@ -9,10 +9,12 @@
     <img src="https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square"
       alt="docs.rs docs" />
   </a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/gcmurphy/osv">
+    <img src="https://api.scorecard.dev/projects/github.com/gcmurphy/osv/badge" alt="ossf scorecard">
+  </a>
 </div>
 
-
-### About 
+### About
 
 This library provides bindings to Open Source Security Foundation's
 Open Source Vulnerability (osv) schema and a client to access
