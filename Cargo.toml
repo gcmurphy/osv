@@ -19,7 +19,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 reqwest = { version = "0.12", features = ["json"], optional = true }
 tokio = { version = "1", features = ["full"], optional = true }
-thiserror = { version = "1.0", optional = true }
+thiserror = { version = "2.0", optional = true }
 url = { version = "2.3.1", optional = true }
 
 [dev-dependencies]
