@@ -547,7 +547,7 @@ pub struct Vulnerability {
 
     /// The published field gives the time the entry should be considered to have been published,
     /// as an RFC3339-formatted time stamp in UTC (ending in “Z”).
-    pub published: DateTime<Utc>,
+    pub published: Option<DateTime<Utc>>,
 
     /// The modified field gives the time the entry was last modified, as an RFC3339-formatted
     /// timestamptime stamp in UTC (ending in “Z”).
@@ -621,7 +621,7 @@ mod tests {
         let vuln = Vulnerability {
             schema_version: Some("1.3.0".to_string()),
             id: "OSV-2020-484".to_string(),
-            published: chrono::Utc::now(),
+            published: Some(chrono::Utc::now()),
             modified: chrono::Utc::now(),
             withdrawn: None,
             aliases: None,

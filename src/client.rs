@@ -338,7 +338,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_missing_cve() {
-        let res = vulnerability("CVE-2014-0160").await;
+        let res = vulnerability("CVE-2014-0161").await;
         assert!(res.is_err());
     }
 }
