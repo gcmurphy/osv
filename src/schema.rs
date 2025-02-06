@@ -67,6 +67,11 @@ pub enum Ecosystem {
         pro: bool,
         lts: bool,
     },
+    Chainguard,
+    Mageia(Option<String>),
+    RedHat(Option<String>),
+    OpenSUSE(Option<String>),
+    SUSE(Option<String>),
 }
 
 impl Serialize for Ecosystem {
@@ -147,6 +152,21 @@ impl Serialize for Ecosystem {
                 pro: false,
                 lts: false,
             } => serializer.serialize_str(&format!("Ubuntu:{}", v)),
+            Ecosystem::Chainguard => serializer.serialize_str("Chainguard"),
+            Ecosystem::Mageia(None) => serializer.serialize_str("Mageia"),
+            Ecosystem::Mageia(Some(release)) => {
+                serializer.serialize_str(&format!("Mageia:{}", release))
+            }
+            Ecosystem::RedHat(None) => serializer.serialize_str("Red Hat"),
+            Ecosystem::RedHat(Some(cpe)) => serializer.serialize_str(&format!("Red Hat:{}", cpe)),
+            Ecosystem::OpenSUSE(None) => serializer.serialize_str("openSUSE"),
+            Ecosystem::OpenSUSE(Some(release)) => {
+                serializer.serialize_str(&format!("openSUSE:{}", release))
+            }
+            Ecosystem::SUSE(None) => serializer.serialize_str("SUSE"),
+            Ecosystem::SUSE(Some(release)) => {
+                serializer.serialize_str(&format!("SUSE:{}", release))
+            }
         }
     }
 }
@@ -221,6 +241,23 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "CRAN" => Ok(Ecosystem::CRAN),
                     "Bioconductor" => Ok(Ecosystem::Bioconductor),
                     "SwiftURL" => Ok(Ecosystem::SwiftURL),
+                    "Chainguard" => Ok(Ecosystem::Chainguard),
+                    "Mageia" => Ok(Ecosystem::Mageia(None)),
+                    _ if value.starts_with("Mageia:") => Ok(Ecosystem::Mageia(
+                        value.strip_prefix("Mageia:").map(|v| v.to_string()),
+                    )),
+                    "Red Hat" => Ok(Ecosystem::RedHat(None)),
+                    _ if value.starts_with("Red Hat:") => Ok(Ecosystem::RedHat(
+                        value.strip_prefix("Red Hat:").map(|v| v.to_string()),
+                    )),
+                    "openSUSE" => Ok(Ecosystem::OpenSUSE(None)),
+                    _ if value.starts_with("openSUSE:") => Ok(Ecosystem::OpenSUSE(
+                        value.strip_prefix("openSUSE:").map(|v| v.to_string()),
+                    )),
+                    "SUSE" => Ok(Ecosystem::SUSE(None)),
+                    _ if value.starts_with("SUSE:") => Ok(Ecosystem::SUSE(
+                        value.strip_prefix("SUSE:").map(|v| v.to_string()),
+                    )),
                     _ if value.starts_with("Ubuntu:Pro:") => {
                         value.strip_prefix("Ubuntu:Pro:").map_or(
                             Err(de::Error::unknown_variant(value, &["Ecosystem"])),
