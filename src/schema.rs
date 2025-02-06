@@ -31,47 +31,42 @@ pub type Version = String;
 #[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd, Clone)]
 #[non_exhaustive]
 pub enum Ecosystem {
+    AlmaLinux(Option<String>),
+    Alpine(Option<String>),
+    Android,
+    Bioconductor,
+    Bitnami,
+    ConanCenter,
+    CRAN,
+    CratesIO,
+    Debian(Option<String>),
+    DWF,
+    GHC,
+    GSD,
+    GitHubActions,
     Go,
-    Npm,
+    Hackage,
+    Hex,
     JavaScript,
+    Linux,
+    Maven(String),
+    Npm,
+    NuGet,
     OssFuzz,
+    Packagist,
+    PhotonOS(Option<String>),
+    Pub,
     PyPI,
     Python,
-    RubyGems,
-    CratesIO,
-    Packagist,
-    Maven(String),
-    NuGet,
-    Linux,
-    Debian(Option<String>),
-    Hex,
-    Android,
-    GitHubActions,
-    Pub,
-    ConanCenter,
-    Alpine(Option<String>),
-    DWF,
-    GSD,
-    UVI,
     RockyLinux(Option<String>),
-    AlmaLinux(Option<String>),
-    Hackage,
-    GHC,
-    PhotonOS(Option<String>),
-    Bitnami,
-    CRAN,
-    Bioconductor,
+    RubyGems,
     SwiftURL,
     Ubuntu {
         version: String,
         pro: bool,
         lts: bool,
     },
-    Chainguard,
-    Mageia(Option<String>),
-    RedHat(Option<String>),
-    OpenSUSE(Option<String>),
-    SUSE(Option<String>),
+    UVI,
 }
 
 impl Serialize for Ecosystem {
@@ -80,15 +75,33 @@ impl Serialize for Ecosystem {
         S: Serializer,
     {
         match self {
-            Ecosystem::Go => serializer.serialize_str("Go"),
-            Ecosystem::Npm => serializer.serialize_str("npm"),
-            Ecosystem::JavaScript => serializer.serialize_str("JavaScript"),
-            Ecosystem::OssFuzz => serializer.serialize_str("OSS-Fuzz"),
-            Ecosystem::PyPI => serializer.serialize_str("PyPI"),
-            Ecosystem::Python => serializer.serialize_str("Python"),
-            Ecosystem::RubyGems => serializer.serialize_str("RubyGems"),
+            Ecosystem::AlmaLinux(None) => serializer.serialize_str("AlmaLinux"),
+            Ecosystem::AlmaLinux(Some(release)) => {
+                serializer.serialize_str(&format!("AlmaLinux:{}", release))
+            }
+            Ecosystem::Alpine(None) => serializer.serialize_str("Alpine"),
+            Ecosystem::Alpine(Some(version)) => {
+                serializer.serialize_str(&format!("Alpine:{}", version))
+            }
+            Ecosystem::Android => serializer.serialize_str("Android"),
+            Ecosystem::Bioconductor => serializer.serialize_str("Bioconductor"),
+            Ecosystem::Bitnami => serializer.serialize_str("Bitnami"),
+            Ecosystem::ConanCenter => serializer.serialize_str("ConanCenter"),
+            Ecosystem::CRAN => serializer.serialize_str("CRAN"),
             Ecosystem::CratesIO => serializer.serialize_str("crates.io"),
-            Ecosystem::Packagist => serializer.serialize_str("Packagist"),
+            Ecosystem::Debian(None) => serializer.serialize_str("Debian"),
+            Ecosystem::Debian(Some(version)) => {
+                serializer.serialize_str(&format!("Debian:{}", version))
+            }
+            Ecosystem::DWF => serializer.serialize_str("DWF"),
+            Ecosystem::GHC => serializer.serialize_str("GHC"),
+            Ecosystem::GSD => serializer.serialize_str("GSD"),
+            Ecosystem::GitHubActions => serializer.serialize_str("GitHub Actions"),
+            Ecosystem::Go => serializer.serialize_str("Go"),
+            Ecosystem::Hackage => serializer.serialize_str("Hackage"),
+            Ecosystem::Hex => serializer.serialize_str("Hex"),
+            Ecosystem::JavaScript => serializer.serialize_str("JavaScript"),
+            Ecosystem::Linux => serializer.serialize_str("Linux"),
             Ecosystem::Maven(repository) => {
                 let mvn: String = match repository.as_str() {
                     "https://repo.maven.apache.org/maven2" => "Maven".to_string(),
@@ -96,41 +109,22 @@ impl Serialize for Ecosystem {
                 };
                 serializer.serialize_str(&mvn)
             }
+            Ecosystem::Npm => serializer.serialize_str("npm"),
             Ecosystem::NuGet => serializer.serialize_str("NuGet"),
-            Ecosystem::Linux => serializer.serialize_str("Linux"),
-            Ecosystem::Debian(None) => serializer.serialize_str("Debian"),
-            Ecosystem::Debian(Some(version)) => {
-                serializer.serialize_str(&format!("Debian:{}", version))
-            }
-            Ecosystem::Hex => serializer.serialize_str("Hex"),
-            Ecosystem::Android => serializer.serialize_str("Android"),
-            Ecosystem::GitHubActions => serializer.serialize_str("GitHub Actions"),
-            Ecosystem::Pub => serializer.serialize_str("Pub"),
-            Ecosystem::ConanCenter => serializer.serialize_str("ConanCenter"),
-            Ecosystem::Alpine(None) => serializer.serialize_str("Alpine"),
-            Ecosystem::Alpine(Some(version)) => {
-                serializer.serialize_str(&format!("Alpine:{}", version))
-            }
-            Ecosystem::DWF => serializer.serialize_str("DWF"),
-            Ecosystem::GSD => serializer.serialize_str("GSD"),
-            Ecosystem::UVI => serializer.serialize_str("UVI"),
-            Ecosystem::RockyLinux(None) => serializer.serialize_str("Rocky Linux"),
-            Ecosystem::RockyLinux(Some(release)) => {
-                serializer.serialize_str(&format!("Rocky Linux:{}", release))
-            }
-            Ecosystem::AlmaLinux(None) => serializer.serialize_str("AlmaLinux"),
-            Ecosystem::AlmaLinux(Some(release)) => {
-                serializer.serialize_str(&format!("AlmaLinux:{}", release))
-            }
-            Ecosystem::Hackage => serializer.serialize_str("Hackage"),
-            Ecosystem::GHC => serializer.serialize_str("GHC"),
+            Ecosystem::OssFuzz => serializer.serialize_str("OSS-Fuzz"),
+            Ecosystem::Packagist => serializer.serialize_str("Packagist"),
             Ecosystem::PhotonOS(None) => serializer.serialize_str("Photon OS"),
             Ecosystem::PhotonOS(Some(release)) => {
                 serializer.serialize_str(&format!("Photon OS:{}", release))
             }
-            Ecosystem::Bitnami => serializer.serialize_str("Bitnami"),
-            Ecosystem::CRAN => serializer.serialize_str("CRAN"),
-            Ecosystem::Bioconductor => serializer.serialize_str("Bioconductor"),
+            Ecosystem::Pub => serializer.serialize_str("Pub"),
+            Ecosystem::PyPI => serializer.serialize_str("PyPI"),
+            Ecosystem::Python => serializer.serialize_str("Python"),
+            Ecosystem::RockyLinux(None) => serializer.serialize_str("Rocky Linux"),
+            Ecosystem::RockyLinux(Some(release)) => {
+                serializer.serialize_str(&format!("Rocky Linux:{}", release))
+            }
+            Ecosystem::RubyGems => serializer.serialize_str("RubyGems"),
             Ecosystem::SwiftURL => serializer.serialize_str("SwiftURL"),
             Ecosystem::Ubuntu {
                 version: v,
@@ -152,21 +146,7 @@ impl Serialize for Ecosystem {
                 pro: false,
                 lts: false,
             } => serializer.serialize_str(&format!("Ubuntu:{}", v)),
-            Ecosystem::Chainguard => serializer.serialize_str("Chainguard"),
-            Ecosystem::Mageia(None) => serializer.serialize_str("Mageia"),
-            Ecosystem::Mageia(Some(release)) => {
-                serializer.serialize_str(&format!("Mageia:{}", release))
-            }
-            Ecosystem::RedHat(None) => serializer.serialize_str("Red Hat"),
-            Ecosystem::RedHat(Some(cpe)) => serializer.serialize_str(&format!("Red Hat:{}", cpe)),
-            Ecosystem::OpenSUSE(None) => serializer.serialize_str("openSUSE"),
-            Ecosystem::OpenSUSE(Some(release)) => {
-                serializer.serialize_str(&format!("openSUSE:{}", release))
-            }
-            Ecosystem::SUSE(None) => serializer.serialize_str("SUSE"),
-            Ecosystem::SUSE(Some(release)) => {
-                serializer.serialize_str(&format!("SUSE:{}", release))
-            }
+            Ecosystem::UVI => serializer.serialize_str("UVI"),
         }
     }
 }
@@ -190,74 +170,56 @@ impl<'de> Deserialize<'de> for Ecosystem {
                 E: de::Error,
             {
                 match value {
-                    "Go" => Ok(Ecosystem::Go),
-                    "npm" => Ok(Ecosystem::Npm),
-                    "JavaScript" => Ok(Ecosystem::JavaScript),
-                    "OSS-Fuzz" => Ok(Ecosystem::OssFuzz),
-                    "PyPI" => Ok(Ecosystem::PyPI),
-                    "Python" => Ok(Ecosystem::Python),
-                    "RubyGems" => Ok(Ecosystem::RubyGems),
+                    "AlmaLinux" | "AlmaLinux:" => Ok(Ecosystem::AlmaLinux(None)),
+                    _ if value.starts_with("AlmaLinux:") => Ok(Ecosystem::AlmaLinux(
+                        value.strip_prefix("AlmaLinux:").map(|v| v.to_string()),
+                    )),
+                    "Alpine" => Ok(Ecosystem::Alpine(None)),
+                    _ if value.starts_with("Alpine:") => Ok(Ecosystem::Alpine(
+                        value.strip_prefix("Alpine:").map(|v| v.to_string()),
+                    )),
+                    "Android" => Ok(Ecosystem::Android),
+                    "Bioconductor" => Ok(Ecosystem::Bioconductor),
+                    "Bitnami" => Ok(Ecosystem::Bitnami),
+                    "ConanCenter" => Ok(Ecosystem::ConanCenter),
+                    "CRAN" => Ok(Ecosystem::CRAN),
                     "crates.io" => Ok(Ecosystem::CratesIO),
-                    "Packagist" => Ok(Ecosystem::Packagist),
+                    "Debian" => Ok(Ecosystem::Debian(None)),
+                    _ if value.starts_with("Debian:") => Ok(Ecosystem::Debian(
+                        value.strip_prefix("Debian:").map(|v| v.to_string()),
+                    )),
+                    "DWF" => Ok(Ecosystem::DWF),
+                    "GHC" => Ok(Ecosystem::GHC),
+                    "GitHub Actions" => Ok(Ecosystem::GitHubActions),
+                    "Go" => Ok(Ecosystem::Go),
+                    "GSD" => Ok(Ecosystem::GSD),
+                    "Hackage" => Ok(Ecosystem::Hackage),
+                    "Hex" => Ok(Ecosystem::Hex),
+                    "JavaScript" => Ok(Ecosystem::JavaScript),
+                    "Linux" => Ok(Ecosystem::Linux),
                     "Maven" | "Maven:" => Ok(Ecosystem::Maven(
                         "https://repo.maven.apache.org/maven2".to_string(),
                     )),
                     _ if value.starts_with("Maven:") => Ok(Ecosystem::Maven(
                         value.strip_prefix("Maven:").map(|v| v.to_string()).unwrap(),
                     )),
+                    "npm" => Ok(Ecosystem::Npm),
                     "NuGet" => Ok(Ecosystem::NuGet),
-                    "Linux" => Ok(Ecosystem::Linux),
-                    "Debian" => Ok(Ecosystem::Debian(None)),
-                    _ if value.starts_with("Debian:") => Ok(Ecosystem::Debian(
-                        value.strip_prefix("Debian:").map(|v| v.to_string()),
-                    )),
-                    "Hex" => Ok(Ecosystem::Hex),
-                    "Android" => Ok(Ecosystem::Android),
-                    "GitHub Actions" => Ok(Ecosystem::GitHubActions),
-                    "Pub" => Ok(Ecosystem::Pub),
-                    "ConanCenter" => Ok(Ecosystem::ConanCenter),
-                    "Alpine" => Ok(Ecosystem::Alpine(None)),
-                    _ if value.starts_with("Alpine:") => Ok(Ecosystem::Alpine(
-                        value.strip_prefix("Alpine:").map(|v| v.to_string()),
-                    )),
-                    "DWF" => Ok(Ecosystem::DWF),
-                    "GSD" => Ok(Ecosystem::GSD),
-                    "UVI" => Ok(Ecosystem::UVI),
-                    "Rocky Linux" | "Rocky Linux:" => Ok(Ecosystem::RockyLinux(None)),
-                    _ if value.starts_with("Rocky Linux:") => Ok(Ecosystem::RockyLinux(
-                        value.strip_prefix("Rocky Linux:").map(|v| v.to_string()),
-                    )),
-                    "AlmaLinux" | "AlmaLinux:" => Ok(Ecosystem::AlmaLinux(None)),
-                    _ if value.starts_with("AlmaLinux:") => Ok(Ecosystem::AlmaLinux(
-                        value.strip_prefix("AlmaLinux:").map(|v| v.to_string()),
-                    )),
-                    "Hackage" => Ok(Ecosystem::Hackage),
-                    "GHC" => Ok(Ecosystem::GHC),
+                    "OSS-Fuzz" => Ok(Ecosystem::OssFuzz),
+                    "Packagist" => Ok(Ecosystem::Packagist),
                     "Photon OS" | "Photon OS:" => Ok(Ecosystem::PhotonOS(None)),
                     _ if value.starts_with("Photon OS:") => Ok(Ecosystem::PhotonOS(
                         value.strip_prefix("Photon OS:").map(|v| v.to_string()),
                     )),
-                    "Bitnami" => Ok(Ecosystem::Bitnami),
-                    "CRAN" => Ok(Ecosystem::CRAN),
-                    "Bioconductor" => Ok(Ecosystem::Bioconductor),
+                    "Pub" => Ok(Ecosystem::Pub),
+                    "PyPI" => Ok(Ecosystem::PyPI),
+                    "Python" => Ok(Ecosystem::Python),
+                    "Rocky Linux" | "Rocky Linux:" => Ok(Ecosystem::RockyLinux(None)),
+                    _ if value.starts_with("Rocky Linux:") => Ok(Ecosystem::RockyLinux(
+                        value.strip_prefix("Rocky Linux:").map(|v| v.to_string()),
+                    )),
+                    "RubyGems" => Ok(Ecosystem::RubyGems),
                     "SwiftURL" => Ok(Ecosystem::SwiftURL),
-                    "Chainguard" => Ok(Ecosystem::Chainguard),
-                    "Mageia" => Ok(Ecosystem::Mageia(None)),
-                    _ if value.starts_with("Mageia:") => Ok(Ecosystem::Mageia(
-                        value.strip_prefix("Mageia:").map(|v| v.to_string()),
-                    )),
-                    "Red Hat" => Ok(Ecosystem::RedHat(None)),
-                    _ if value.starts_with("Red Hat:") => Ok(Ecosystem::RedHat(
-                        value.strip_prefix("Red Hat:").map(|v| v.to_string()),
-                    )),
-                    "openSUSE" => Ok(Ecosystem::OpenSUSE(None)),
-                    _ if value.starts_with("openSUSE:") => Ok(Ecosystem::OpenSUSE(
-                        value.strip_prefix("openSUSE:").map(|v| v.to_string()),
-                    )),
-                    "SUSE" => Ok(Ecosystem::SUSE(None)),
-                    _ if value.starts_with("SUSE:") => Ok(Ecosystem::SUSE(
-                        value.strip_prefix("SUSE:").map(|v| v.to_string()),
-                    )),
                     _ if value.starts_with("Ubuntu:Pro:") => {
                         value.strip_prefix("Ubuntu:Pro:").map_or(
                             Err(de::Error::unknown_variant(value, &["Ecosystem"])),
@@ -304,6 +266,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
                             }
                         },
                     ),
+                    "UVI" => Ok(Ecosystem::UVI),
                     _ => Err(de::Error::unknown_variant(value, &["Ecosystem"])),
                 }
             }
@@ -318,8 +281,9 @@ impl<'de> Deserialize<'de> for Ecosystem {
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum RangeType {
-    /// Default for the case where a range type is omitted.
-    Unspecified,
+    /// The versions introduced and fixed are arbitrary, uninterpreted strings specific to the
+    /// package ecosystem
+    Ecosystem,
 
     /// The versions introduced and fixed are full-length Git commit hashes.
     Git,
@@ -327,9 +291,8 @@ pub enum RangeType {
     /// The versions introduced and fixed are semantic versions as defined by SemVer 2.0.0.
     Semver,
 
-    /// The versions introduced and fixed are arbitrary, uninterpreted strings specific to the
-    /// package ecosystem
-    Ecosystem,
+    /// Default for the case where a range type is omitted.
+    Unspecified,
 }
 
 /// The event captures information about the how and when
@@ -421,23 +384,8 @@ pub struct Affected {
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum ReferenceType {
-    #[serde(rename = "NONE")]
-    Undefined,
-
-    /// A web page of some unspecified kind.
-    Web,
-
     /// A published security advisory for the vulnerability.
     Advisory,
-
-    /// A report, typically on a bug or issue tracker, of the vulnerability.
-    Report,
-
-    /// A source code browser link to the fix.
-    Fix,
-
-    /// A home web page for the package.
-    Package,
 
     /// An article or blog post describing the vulnerability.
     Article,
@@ -446,17 +394,32 @@ pub enum ReferenceType {
     /// of the vulnerability in production environments
     Detection,
 
-    /// A source code browser link to the introduction of the vulnerability.
-    Introduced,
+    /// A social media discussion regarding the vulnerability.
+    Discussion,
 
     /// A demonstration of the validity of a vulnerability claim
     Evidence,
 
+    /// A source code browser link to the fix.
+    Fix,
+
     /// Git commit hash or range where the issue occurred
     Git,
 
-    /// A social media discussion regarding the vulnerability.
-    Discussion,
+    /// A source code browser link to the introduction of the vulnerability.
+    Introduced,
+
+    /// A home web page for the package.
+    Package,
+
+    /// A report, typically on a bug or issue tracker, of the vulnerability.
+    Report,
+
+    #[serde(rename = "NONE")]
+    Undefined,
+
+    /// A web page of some unspecified kind.
+    Web,
 }
 
 /// Reference to additional information about the vulnerability.
@@ -476,16 +439,11 @@ pub struct Reference {
 #[derive(Debug, Serialize, Deserialize)]
 #[non_exhaustive]
 pub enum SeverityType {
-    /// The severity score was arrived at by using an unspecified
-    /// scoring method.
-    #[serde(rename = "UNSPECIFIED")]
-    Unspecified,
-
-    /// A CVSS vector string representing the unique characterictics and severity of the vulnerability
-    /// using a version on the [Common Vulnerability Scoring System notation](https://www.first.org/cvss/)
-    /// that is >= 4.0 and < 5.0 (e.g. `"CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:N/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N"`).
-    #[serde(rename = "CVSS_V4")]
-    CVSSv4,
+    /// A CVSS vector string representing the unique characteristics and severity of the vulnerability
+    /// using a version of the [Common Vulnerability Scoring System notation](https://www.first.org/cvss/v2/)
+    /// that is == 2.0 (e.g.`"AV:L/AC:M/Au:N/C:N/I:P/A:C"`).
+    #[serde(rename = "CVSS_V2")]
+    CVSSv2,
 
     /// A CVSS vector string representing the unique characteristics and severity of the
     /// vulnerability using a version of the Common Vulnerability Scoring System notation that is
@@ -493,11 +451,16 @@ pub enum SeverityType {
     #[serde(rename = "CVSS_V3")]
     CVSSv3,
 
-    /// A CVSS vector string representing the unique characteristics and severity of the vulnerability
-    /// using a version of the [Common Vulnerability Scoring System notation](https://www.first.org/cvss/v2/)
-    /// that is == 2.0 (e.g.`"AV:L/AC:M/Au:N/C:N/I:P/A:C"`).
-    #[serde(rename = "CVSS_V2")]
-    CVSSv2,
+    /// A CVSS vector string representing the unique characterictics and severity of the vulnerability
+    /// using a version on the [Common Vulnerability Scoring System notation](https://www.first.org/cvss/)
+    /// that is >= 4.0 and < 5.0 (e.g. `"CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:N/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N"`).
+    #[serde(rename = "CVSS_V4")]
+    CVSSv4,
+
+    /// The severity score was arrived at by using an unspecified
+    /// scoring method.
+    #[serde(rename = "UNSPECIFIED")]
+    Unspecified,
 }
 
 /// The type and score used to describe the severity of a vulnerability using one
@@ -522,17 +485,18 @@ pub struct Severity {
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum CreditType {
-    /// Identified the vulnerability
-    Finder,
-
-    /// Notified the vendor of the vulnerability to a CNA.
-    Reporter,
-
     /// Validated the vulnerability to ensure accruacy or severity.
     Analyst,
 
     /// Facilitated the corredinated response process.
     Coordinator,
+
+    /// Identified the vulnerability
+    Finder,
+
+    /// Any other type or role that does not fall under the categories
+    /// described above.
+    Other,
 
     /// Prepared a code change or other remediation plans.
     RemediationDeveloper,
@@ -544,15 +508,14 @@ pub enum CreditType {
     /// Tested and verified the vulnerability or its remediation.
     RemediationVerifier,
 
-    /// Names of tools used in vulnerability discovery or identification.
-    Tool,
+    /// Notified the vendor of the vulnerability to a CNA.
+    Reporter,
 
     /// Supported the vulnerability identification or remediation activities.
     Sponsor,
 
-    /// Any other type or role that does not fall under the categories
-    /// described above.
-    Other,
+    /// Names of tools used in vulnerability discovery or identification.
+    Tool,
 }
 
 /// Provides a way to give credit for the discovery, confirmation, patch or other events in the
@@ -584,7 +547,7 @@ pub struct Vulnerability {
 
     /// The published field gives the time the entry should be considered to have been published,
     /// as an RFC3339-formatted time stamp in UTC (ending in “Z”).
-    pub published: Option<DateTime<Utc>>,
+    pub published: DateTime<Utc>,
 
     /// The modified field gives the time the entry was last modified, as an RFC3339-formatted
     /// timestamptime stamp in UTC (ending in “Z”).
@@ -658,7 +621,7 @@ mod tests {
         let vuln = Vulnerability {
             schema_version: Some("1.3.0".to_string()),
             id: "OSV-2020-484".to_string(),
-            published: Some(chrono::Utc::now()),
+            published: chrono::Utc::now(),
             modified: chrono::Utc::now(),
             withdrawn: None,
             aliases: None,
