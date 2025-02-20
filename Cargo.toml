@@ -24,8 +24,6 @@ url = { version = "2.3.1", optional = true }
 
 [dev-dependencies]
 comfy-table = "7.1.1"
-cargo-audit = "0.21.0"
-cargo-fuzz = "0.12.0"
 cargo-release = "0.25.10"
 textwrap = { version = "0.16.1", features = ["default", "terminal_size"] }
 tokio-test = "0.4.3"

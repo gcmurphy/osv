@@ -36,6 +36,7 @@ pub enum Ecosystem {
     Android,
     Bioconductor,
     Bitnami,
+    Chainguard,
     ConanCenter,
     CRAN,
     CratesIO,
@@ -49,17 +50,21 @@ pub enum Ecosystem {
     Hex,
     JavaScript,
     Linux,
+    Mageia(String),
     Maven(String),
     Npm,
     NuGet,
+    OpenSUSE(Option<String>),
     OssFuzz,
     Packagist,
     PhotonOS(Option<String>),
     Pub,
     PyPI,
     Python,
+    RedHat(Option<String>),
     RockyLinux(Option<String>),
     RubyGems,
+    SUSE(Option<String>),
     SwiftURL,
     Ubuntu {
         version: String,
@@ -86,6 +91,7 @@ impl Serialize for Ecosystem {
             Ecosystem::Android => serializer.serialize_str("Android"),
             Ecosystem::Bioconductor => serializer.serialize_str("Bioconductor"),
             Ecosystem::Bitnami => serializer.serialize_str("Bitnami"),
+            Ecosystem::Chainguard => serializer.serialize_str("Chainguard"),
             Ecosystem::ConanCenter => serializer.serialize_str("ConanCenter"),
             Ecosystem::CRAN => serializer.serialize_str("CRAN"),
             Ecosystem::CratesIO => serializer.serialize_str("crates.io"),
@@ -102,6 +108,7 @@ impl Serialize for Ecosystem {
             Ecosystem::Hex => serializer.serialize_str("Hex"),
             Ecosystem::JavaScript => serializer.serialize_str("JavaScript"),
             Ecosystem::Linux => serializer.serialize_str("Linux"),
+            Ecosystem::Mageia(release) => serializer.serialize_str(&format!("Mageia:{}", release)),
             Ecosystem::Maven(repository) => {
                 let mvn: String = match repository.as_str() {
                     "https://repo.maven.apache.org/maven2" => "Maven".to_string(),
@@ -111,6 +118,10 @@ impl Serialize for Ecosystem {
             }
             Ecosystem::Npm => serializer.serialize_str("npm"),
             Ecosystem::NuGet => serializer.serialize_str("NuGet"),
+            Ecosystem::OpenSUSE(None) => serializer.serialize_str("OpenSUSE"),
+            Ecosystem::OpenSUSE(Some(release)) => {
+                serializer.serialize_str(&format!("OpenSUSE:{}", release))
+            }
             Ecosystem::OssFuzz => serializer.serialize_str("OSS-Fuzz"),
             Ecosystem::Packagist => serializer.serialize_str("Packagist"),
             Ecosystem::PhotonOS(None) => serializer.serialize_str("Photon OS"),
@@ -120,11 +131,19 @@ impl Serialize for Ecosystem {
             Ecosystem::Pub => serializer.serialize_str("Pub"),
             Ecosystem::PyPI => serializer.serialize_str("PyPI"),
             Ecosystem::Python => serializer.serialize_str("Python"),
+            Ecosystem::RedHat(None) => serializer.serialize_str("Red Hat"),
+            Ecosystem::RedHat(Some(release)) => {
+                serializer.serialize_str(&format!("Red Hat:{}", release))
+            }
             Ecosystem::RockyLinux(None) => serializer.serialize_str("Rocky Linux"),
             Ecosystem::RockyLinux(Some(release)) => {
                 serializer.serialize_str(&format!("Rocky Linux:{}", release))
             }
             Ecosystem::RubyGems => serializer.serialize_str("RubyGems"),
+            Ecosystem::SUSE(None) => serializer.serialize_str("SUSE"),
+            Ecosystem::SUSE(Some(release)) => {
+                serializer.serialize_str(&format!("SUSE:{}", release))
+            }
             Ecosystem::SwiftURL => serializer.serialize_str("SwiftURL"),
             Ecosystem::Ubuntu {
                 version: v,
@@ -181,6 +200,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "Android" => Ok(Ecosystem::Android),
                     "Bioconductor" => Ok(Ecosystem::Bioconductor),
                     "Bitnami" => Ok(Ecosystem::Bitnami),
+                    "Chainguard" => Ok(Ecosystem::Chainguard),
                     "ConanCenter" => Ok(Ecosystem::ConanCenter),
                     "CRAN" => Ok(Ecosystem::CRAN),
                     "crates.io" => Ok(Ecosystem::CratesIO),
@@ -197,6 +217,12 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "Hex" => Ok(Ecosystem::Hex),
                     "JavaScript" => Ok(Ecosystem::JavaScript),
                     "Linux" => Ok(Ecosystem::Linux),
+                    _ if value.starts_with("Mageia:") => Ok(Ecosystem::Mageia(
+                        value
+                            .strip_prefix("Mageia:")
+                            .map(|v| v.to_string())
+                            .unwrap(),
+                    )),
                     "Maven" | "Maven:" => Ok(Ecosystem::Maven(
                         "https://repo.maven.apache.org/maven2".to_string(),
                     )),
@@ -205,6 +231,10 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     )),
                     "npm" => Ok(Ecosystem::Npm),
                     "NuGet" => Ok(Ecosystem::NuGet),
+                    "OpenSUSE" => Ok(Ecosystem::OpenSUSE(None)),
+                    _ if value.starts_with("OpenSUSE:") => Ok(Ecosystem::OpenSUSE(
+                        value.strip_prefix("OpenSUSE:").map(|v| v.to_string()),
+                    )),
                     "OSS-Fuzz" => Ok(Ecosystem::OssFuzz),
                     "Packagist" => Ok(Ecosystem::Packagist),
                     "Photon OS" | "Photon OS:" => Ok(Ecosystem::PhotonOS(None)),
@@ -214,11 +244,19 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "Pub" => Ok(Ecosystem::Pub),
                     "PyPI" => Ok(Ecosystem::PyPI),
                     "Python" => Ok(Ecosystem::Python),
+                    "Red Hat" => Ok(Ecosystem::RedHat(None)),
+                    _ if value.starts_with("Red Hat:") => Ok(Ecosystem::RedHat(
+                        value.strip_prefix("Red Hat:").map(|v| v.to_string()),
+                    )),
                     "Rocky Linux" | "Rocky Linux:" => Ok(Ecosystem::RockyLinux(None)),
                     _ if value.starts_with("Rocky Linux:") => Ok(Ecosystem::RockyLinux(
                         value.strip_prefix("Rocky Linux:").map(|v| v.to_string()),
                     )),
                     "RubyGems" => Ok(Ecosystem::RubyGems),
+                    "SUSE" => Ok(Ecosystem::SUSE(None)),
+                    _ if value.starts_with("SUSE:") => Ok(Ecosystem::SUSE(
+                        value.strip_prefix("SUSE:").map(|v| v.to_string()),
+                    )),
                     "SwiftURL" => Ok(Ecosystem::SwiftURL),
                     _ if value.starts_with("Ubuntu:Pro:") => {
                         value.strip_prefix("Ubuntu:Pro:").map_or(
@@ -547,7 +585,7 @@ pub struct Vulnerability {
 
     /// The published field gives the time the entry should be considered to have been published,
     /// as an RFC3339-formatted time stamp in UTC (ending in “Z”).
-    pub published: DateTime<Utc>,
+    pub published: Option<DateTime<Utc>>,
 
     /// The modified field gives the time the entry was last modified, as an RFC3339-formatted
     /// timestamptime stamp in UTC (ending in “Z”).
@@ -621,7 +659,7 @@ mod tests {
         let vuln = Vulnerability {
             schema_version: Some("1.3.0".to_string()),
             id: "OSV-2020-484".to_string(),
-            published: chrono::Utc::now(),
+            published: Some(chrono::Utc::now()),
             modified: chrono::Utc::now(),
             withdrawn: None,
             aliases: None,
