@@ -20,7 +20,7 @@ This library provides bindings to Open Source Security Foundation's
 Open Source Vulnerability (osv) schema and a client to access
 the API from the Rust Language.
 
-Currently compatible with v1.6.3 of the [ossf/osv-schema](https://github.com/ossf/osv-schema).
+Currently compatible with v1.6.7 of the [ossf/osv-schema](https://github.com/ossf/osv-schema).
 
 ### References
 
