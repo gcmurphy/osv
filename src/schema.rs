@@ -264,7 +264,17 @@ impl<'de> Deserialize<'de> for Ecosystem {
                             |v| {
                                 let parts: Vec<&str> = v.split(':').collect();
                                 match parts.as_slice() {
+                                    [_, ver, "LTS"] => Ok(Ecosystem::Ubuntu {
+                                        version: ver.to_string(),
+                                        pro: true,
+                                        lts: true,
+                                    }),
                                     [ver, "LTS"] => Ok(Ecosystem::Ubuntu {
+                                        version: ver.to_string(),
+                                        pro: true,
+                                        lts: true,
+                                    }),
+                                    [ver, "LTS", ..] => Ok(Ecosystem::Ubuntu {
                                         version: ver.to_string(),
                                         pro: true,
                                         lts: true,
@@ -290,6 +300,11 @@ impl<'de> Deserialize<'de> for Ecosystem {
                                 [ver, "LTS"] => Ok(Ecosystem::Ubuntu {
                                     version: ver.to_string(),
                                     pro: false,
+                                    lts: true,
+                                }),
+                                [ver, "LTS", ..] => Ok(Ecosystem::Ubuntu {
+                                    version: ver.to_string(),
+                                    pro: true,
                                     lts: true,
                                 }),
                                 [ver] => Ok(Ecosystem::Ubuntu {
