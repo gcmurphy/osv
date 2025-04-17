@@ -3,8 +3,7 @@ use serde::de::{self, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 /// Package identifies the code library or command that
 /// is potentially affected by a particular vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
-
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Package {
     /// The name of the package or dependency.
     pub name: String,
@@ -330,7 +329,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
 
 /// Type of the affected range supplied. This can be an ecosystem
 /// specific value, semver, or a git commit hash.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum RangeType {
@@ -350,7 +349,7 @@ pub enum RangeType {
 
 /// The event captures information about the how and when
 /// the package was affected by the vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 #[non_exhaustive]
 pub enum Event {
@@ -371,7 +370,7 @@ pub enum Event {
 
 /// The range of versions of a package for which
 /// it is affected by the vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Range {
     /// The format that the range events are specified in, for
     /// example SEMVER or GIT.
@@ -393,7 +392,7 @@ pub struct Range {
 /// by a particular vulnerability. The affected ranges can include
 /// when the vulnerability was first introduced and also when it
 /// was fixed.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Affected {
     /// The package that is affected by the vulnerability
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -433,7 +432,7 @@ pub struct Affected {
 /// The type of reference information that has been provided. Examples include
 /// links to the original report, external advisories, or information about the
 /// fix.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum ReferenceType {
@@ -476,7 +475,7 @@ pub enum ReferenceType {
 }
 
 /// Reference to additional information about the vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Reference {
     /// The type of reference this URL points to.
     #[serde(rename = "type")]
@@ -489,7 +488,7 @@ pub struct Reference {
 
 /// The [`SeverityType`](SeverityType) describes the quantitative scoring method used to rate the
 /// severity of the vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[non_exhaustive]
 pub enum SeverityType {
     /// A CVSS vector string representing the unique characteristics and severity of the vulnerability
@@ -518,7 +517,7 @@ pub enum SeverityType {
 
 /// The type and score used to describe the severity of a vulnerability using one
 /// or more quantitative scoring methods.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Severity {
     /// The severity type property must be a [`SeverityType`](SeverityType), which describes the
     /// quantitative method used to calculate the associated score.
@@ -534,7 +533,7 @@ pub struct Severity {
 /// the type or role of the individual or entity being credited.
 ///
 /// These values and their definitions correspond directly to the [MITRE CVE specification](https://cveproject.github.io/cve-schema/schema/v5.0/docs/#collapseDescription_oneOf_i0_containers_cna_credits_items_type).
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum CreditType {
@@ -573,7 +572,7 @@ pub enum CreditType {
 
 /// Provides a way to give credit for the discovery, confirmation, patch or other events in the
 /// life cycle of a vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Credit {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -588,7 +587,7 @@ pub struct Credit {
 /// This is the entity that is returned when vulnerable data exists for
 /// a given package or when requesting information about a specific vulnerability
 /// by unique identifier.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Vulnerability {
     /// The schema_version field is used to indicate which version of the OSV schema a particular
     /// vulnerability was exported with.
