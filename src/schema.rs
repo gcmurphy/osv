@@ -1,10 +1,11 @@
 use chrono::{DateTime, Utc};
+use lazy_regex::regex_switch;
 use serde::de::{self, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 /// Package identifies the code library or command that
 /// is potentially affected by a particular vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
-
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Package {
     /// The name of the package or dependency.
     pub name: String,
@@ -68,6 +69,8 @@ pub enum Ecosystem {
     SwiftURL,
     Ubuntu {
         version: String,
+        metadata: Option<String>,
+        fips: Option<String>,
         pro: bool,
         lts: bool,
     },
@@ -146,25 +149,29 @@ impl Serialize for Ecosystem {
             }
             Ecosystem::SwiftURL => serializer.serialize_str("SwiftURL"),
             Ecosystem::Ubuntu {
-                version: v,
-                pro: true,
-                lts: true,
-            } => serializer.serialize_str(&format!("Ubuntu:Pro:{}:LTS", v)),
-            Ecosystem::Ubuntu {
-                version: v,
-                pro: true,
-                lts: false,
-            } => serializer.serialize_str(&format!("Ubuntu:Pro:{}", v)),
-            Ecosystem::Ubuntu {
-                version: v,
-                pro: false,
-                lts: true,
-            } => serializer.serialize_str(&format!("Ubuntu:{}:LTS", v)),
-            Ecosystem::Ubuntu {
-                version: v,
-                pro: false,
-                lts: false,
-            } => serializer.serialize_str(&format!("Ubuntu:{}", v)),
+                version,
+                pro,
+                lts,
+                metadata,
+                fips,
+            } => {
+                let mut parts: Vec<String> = vec!["Ubuntu".to_string()];
+                if *pro {
+                    parts.push("Pro".to_string());
+                }
+                if let Some(stream) = fips {
+                    parts.push(stream.clone());
+                }
+                parts.push(version.clone());
+                if *lts {
+                    parts.push("LTS".to_string());
+                }
+                if let Some(meta) = metadata {
+                    parts.push(meta.clone());
+                }
+                let serialized = parts.join(":");
+                serializer.serialize_str(&serialized)
+            }
             Ecosystem::UVI => serializer.serialize_str("UVI"),
         }
     }
@@ -177,7 +184,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
     {
         struct EcosystemVisitor;
 
-        impl<'de> Visitor<'de> for EcosystemVisitor {
+        impl Visitor<'_> for EcosystemVisitor {
             type Value = Ecosystem;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -258,52 +265,19 @@ impl<'de> Deserialize<'de> for Ecosystem {
                         value.strip_prefix("SUSE:").map(|v| v.to_string()),
                     )),
                     "SwiftURL" => Ok(Ecosystem::SwiftURL),
-                    _ if value.starts_with("Ubuntu:Pro:") => {
-                        value.strip_prefix("Ubuntu:Pro:").map_or(
-                            Err(de::Error::unknown_variant(value, &["Ecosystem"])),
-                            |v| {
-                                let parts: Vec<&str> = v.split(':').collect();
-                                match parts.as_slice() {
-                                    [ver, "LTS"] => Ok(Ecosystem::Ubuntu {
-                                        version: ver.to_string(),
-                                        pro: true,
-                                        lts: true,
-                                    }),
-                                    [ver] => Ok(Ecosystem::Ubuntu {
-                                        version: ver.to_string(),
-                                        pro: true,
-                                        lts: false,
-                                    }),
-                                    _ => Err(de::Error::unknown_variant(
-                                        value,
-                                        &["Ecosystem", "Ubuntu:Pro:YY.MM:(LTS?)"],
-                                    )),
+                    _ if value.starts_with("Ubuntu:") => {
+                        regex_switch!(value,
+                            r#"^Ubuntu(?::Pro)?(?::(?<fips>FIPS(?:-preview|-updates)?))?:(?<version>\d+\.\d+)(?::LTS)?(?::for:(?<specialized>.+))?$"# => {
+                                Ecosystem::Ubuntu {
+                                    version: version.to_string(),
+                                    metadata: (!specialized.is_empty()).then_some(specialized.to_string()),
+                                    fips: (!fips.is_empty()).then_some(fips.to_string()),
+                                    pro: value.contains(":Pro"),
+                                    lts: value.contains(":LTS"),
                                 }
-                            },
-                        )
-                    }
-                    _ if value.starts_with("Ubuntu:") => value.strip_prefix("Ubuntu:").map_or(
-                        Err(de::Error::unknown_variant(value, &["Ecosystem"])),
-                        |v| {
-                            let parts: Vec<&str> = v.split(':').collect();
-                            match parts.as_slice() {
-                                [ver, "LTS"] => Ok(Ecosystem::Ubuntu {
-                                    version: ver.to_string(),
-                                    pro: false,
-                                    lts: true,
-                                }),
-                                [ver] => Ok(Ecosystem::Ubuntu {
-                                    version: ver.to_string(),
-                                    pro: false,
-                                    lts: false,
-                                }),
-                                _ => Err(de::Error::unknown_variant(
-                                    value,
-                                    &["Ecosystem", "Ubuntu:YY.MM:(?LTS)"],
-                                )),
                             }
-                        },
-                    ),
+                        ).ok_or(de::Error::unknown_variant(value, &["Ecosystem"]))
+                    }
                     "UVI" => Ok(Ecosystem::UVI),
                     _ => Err(de::Error::unknown_variant(value, &["Ecosystem"])),
                 }
@@ -315,7 +289,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
 
 /// Type of the affected range supplied. This can be an ecosystem
 /// specific value, semver, or a git commit hash.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum RangeType {
@@ -335,7 +309,7 @@ pub enum RangeType {
 
 /// The event captures information about the how and when
 /// the package was affected by the vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 #[non_exhaustive]
 pub enum Event {
@@ -356,7 +330,7 @@ pub enum Event {
 
 /// The range of versions of a package for which
 /// it is affected by the vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Range {
     /// The format that the range events are specified in, for
     /// example SEMVER or GIT.
@@ -378,7 +352,7 @@ pub struct Range {
 /// by a particular vulnerability. The affected ranges can include
 /// when the vulnerability was first introduced and also when it
 /// was fixed.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Affected {
     /// The package that is affected by the vulnerability
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -418,7 +392,7 @@ pub struct Affected {
 /// The type of reference information that has been provided. Examples include
 /// links to the original report, external advisories, or information about the
 /// fix.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum ReferenceType {
@@ -461,7 +435,7 @@ pub enum ReferenceType {
 }
 
 /// Reference to additional information about the vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Reference {
     /// The type of reference this URL points to.
     #[serde(rename = "type")]
@@ -474,7 +448,7 @@ pub struct Reference {
 
 /// The [`SeverityType`](SeverityType) describes the quantitative scoring method used to rate the
 /// severity of the vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[non_exhaustive]
 pub enum SeverityType {
     /// A CVSS vector string representing the unique characteristics and severity of the vulnerability
@@ -503,7 +477,7 @@ pub enum SeverityType {
 
 /// The type and score used to describe the severity of a vulnerability using one
 /// or more quantitative scoring methods.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Severity {
     /// The severity type property must be a [`SeverityType`](SeverityType), which describes the
     /// quantitative method used to calculate the associated score.
@@ -519,7 +493,7 @@ pub struct Severity {
 /// the type or role of the individual or entity being credited.
 ///
 /// These values and their definitions correspond directly to the [MITRE CVE specification](https://cveproject.github.io/cve-schema/schema/v5.0/docs/#collapseDescription_oneOf_i0_containers_cna_credits_items_type).
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum CreditType {
@@ -558,7 +532,7 @@ pub enum CreditType {
 
 /// Provides a way to give credit for the discovery, confirmation, patch or other events in the
 /// life cycle of a vulnerability.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Credit {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -573,7 +547,7 @@ pub struct Credit {
 /// This is the entity that is returned when vulnerable data exists for
 /// a given package or when requesting information about a specific vulnerability
 /// by unique identifier.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Vulnerability {
     /// The schema_version field is used to indicate which version of the OSV schema a particular
     /// vulnerability was exported with.
@@ -720,6 +694,8 @@ mod tests {
             version: "20.04".to_string(),
             pro: true,
             lts: true,
+            fips: None,
+            metadata: None,
         };
         let as_json = serde_json::json!(ubuntu);
         assert_eq!(as_json, serde_json::json!("Ubuntu:Pro:20.04:LTS"));
@@ -728,6 +704,8 @@ mod tests {
             version: "20.04".to_string(),
             pro: true,
             lts: false,
+            fips: None,
+            metadata: None,
         };
         let as_json = serde_json::json!(ubuntu);
         assert_eq!(as_json, serde_json::json!("Ubuntu:Pro:20.04"));
@@ -736,6 +714,8 @@ mod tests {
             version: "20.04".to_string(),
             pro: false,
             lts: true,
+            fips: None,
+            metadata: None,
         };
         let as_json = serde_json::json!(ubuntu);
         assert_eq!(as_json, serde_json::json!("Ubuntu:20.04:LTS"));
@@ -744,6 +724,8 @@ mod tests {
             version: "20.04".to_string(),
             pro: false,
             lts: false,
+            fips: None,
+            metadata: None,
         };
         let as_json = serde_json::json!(ubuntu);
         assert_eq!(as_json, serde_json::json!("Ubuntu:20.04"));
@@ -755,7 +737,9 @@ mod tests {
             Ecosystem::Ubuntu {
                 version: "20.04".to_string(),
                 pro: true,
-                lts: true
+                lts: true,
+                fips: None,
+                metadata: None,
             }
         );
 
@@ -766,7 +750,9 @@ mod tests {
             Ecosystem::Ubuntu {
                 version: "20.04".to_string(),
                 pro: true,
-                lts: false
+                lts: false,
+                fips: None,
+                metadata: None,
             }
         );
 
@@ -777,7 +763,9 @@ mod tests {
             Ecosystem::Ubuntu {
                 version: "20.04".to_string(),
                 pro: false,
-                lts: true
+                lts: true,
+                fips: None,
+                metadata: None,
             }
         );
 
@@ -788,7 +776,62 @@ mod tests {
             Ecosystem::Ubuntu {
                 version: "20.04".to_string(),
                 pro: false,
-                lts: false
+                lts: false,
+                fips: None,
+                metadata: None,
+            }
+        );
+
+        let json_str = r#""Ubuntu:22.04:LTS:for:NVIDIA:BlueField""#;
+        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            ubuntu,
+            Ecosystem::Ubuntu {
+                version: "22.04".to_string(),
+                pro: false,
+                lts: true,
+                fips: None,
+                metadata: Some("NVIDIA:BlueField".to_string()),
+            }
+        );
+
+        let json_str = r#""Ubuntu:Pro:FIPS-preview:22.04:LTS""#;
+        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            ubuntu,
+            Ecosystem::Ubuntu {
+                version: "22.04".to_string(),
+                pro: true,
+                lts: true,
+                fips: Some("FIPS-preview".to_string()),
+                metadata: None,
+            }
+        );
+
+        let json_str = r#""Ubuntu:Pro:FIPS-updates:18.04:LTS""#;
+        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            ubuntu,
+            Ecosystem::Ubuntu {
+                version: "18.04".to_string(),
+                pro: true,
+                lts: true,
+                fips: Some("FIPS-updates".to_string()),
+                metadata: None,
+            }
+        );
+
+        let json_str = r#""Ubuntu:Pro:FIPS:16.04:LTS""#;
+        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
+
+        assert_eq!(
+            ubuntu,
+            Ecosystem::Ubuntu {
+                version: "16.04".to_string(),
+                pro: true,
+                lts: true,
+                fips: Some("FIPS".to_string()),
+                metadata: None,
             }
         );
     }
