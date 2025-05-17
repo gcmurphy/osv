@@ -75,6 +75,7 @@ pub enum Ecosystem {
         lts: bool,
     },
     UVI,
+    Wolfi,
 }
 
 impl Serialize for Ecosystem {
@@ -121,9 +122,9 @@ impl Serialize for Ecosystem {
             }
             Ecosystem::Npm => serializer.serialize_str("npm"),
             Ecosystem::NuGet => serializer.serialize_str("NuGet"),
-            Ecosystem::OpenSUSE(None) => serializer.serialize_str("OpenSUSE"),
+            Ecosystem::OpenSUSE(None) => serializer.serialize_str("openSUSE"),
             Ecosystem::OpenSUSE(Some(release)) => {
-                serializer.serialize_str(&format!("OpenSUSE:{}", release))
+                serializer.serialize_str(&format!("openSUSE:{}", release))
             }
             Ecosystem::OssFuzz => serializer.serialize_str("OSS-Fuzz"),
             Ecosystem::Packagist => serializer.serialize_str("Packagist"),
@@ -173,6 +174,7 @@ impl Serialize for Ecosystem {
                 serializer.serialize_str(&serialized)
             }
             Ecosystem::UVI => serializer.serialize_str("UVI"),
+            Ecosystem::Wolfi => serializer.serialize_str("Wolfi"),
         }
     }
 }
@@ -238,9 +240,9 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     )),
                     "npm" => Ok(Ecosystem::Npm),
                     "NuGet" => Ok(Ecosystem::NuGet),
-                    "OpenSUSE" => Ok(Ecosystem::OpenSUSE(None)),
-                    _ if value.starts_with("OpenSUSE:") => Ok(Ecosystem::OpenSUSE(
-                        value.strip_prefix("OpenSUSE:").map(|v| v.to_string()),
+                    "openSUSE" => Ok(Ecosystem::OpenSUSE(None)),
+                    _ if value.starts_with("openSUSE:") => Ok(Ecosystem::OpenSUSE(
+                        value.strip_prefix("openSUSE:").map(|v| v.to_string()),
                     )),
                     "OSS-Fuzz" => Ok(Ecosystem::OssFuzz),
                     "Packagist" => Ok(Ecosystem::Packagist),
@@ -279,6 +281,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
                         ).ok_or(de::Error::unknown_variant(value, &["Ecosystem"]))
                     }
                     "UVI" => Ok(Ecosystem::UVI),
+                    "Wolfi" => Ok(Ecosystem::Wolfi),
                     _ => Err(de::Error::unknown_variant(value, &["Ecosystem"])),
                 }
             }
@@ -600,7 +603,7 @@ pub struct Vulnerability {
     pub details: Option<String>,
 
     /// Indicates the specific package ranges that are affected by this vulnerability.
-    pub affected: Vec<Affected>,
+    pub affected: Option<Vec<Affected>>,
 
     /// An optional list of external reference's that provide more context about this
     /// vulnerability.
@@ -640,7 +643,7 @@ mod tests {
             related: None,
             summary: None,
             details: None,
-            affected: vec![],
+            affected: None,
             references: None,
             severity: None,
             credits: None,

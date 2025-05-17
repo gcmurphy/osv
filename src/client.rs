@@ -185,8 +185,10 @@ pub async fn query(q: &Request) -> Result<Option<Vec<Vulnerability>>, ApiError> 
 ///     if let Some(vulns) = query_package(pkg, ver, PyPI).await.unwrap() {
 ///         for vuln in &vulns {
 ///             println!("{:#?} - {:#?}", vuln.id, vuln.details);
-///             for affected in &vuln.affected {
-///                 println!("    {:#?}", affected.ranges);
+///             if let Some(affected_range) = &vuln.affected {
+///                 for affected in affected_range {
+///                     println!("    {:#?}", affected.ranges);
+///                 }
 ///             }
 ///         }
 ///     } else {
