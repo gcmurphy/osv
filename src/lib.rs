@@ -6,3 +6,6 @@ pub mod client;
 
 #[cfg(feature = "data")]
 pub mod data;
+
+#[cfg(feature = "local")]
+pub mod local;

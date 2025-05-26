@@ -24,19 +24,21 @@ thiserror = { version = "2.0", optional = true }
 url = { version = "2.3.1", optional = true }
 object_store = { version = "0.12.0", optional = true, features = ["gcp"] }
 futures = { version = "0.3.31", optional = true }
-
+walkdir = { version = "2.5.0", optional = true }
 
 [dev-dependencies]
 comfy-table = "7.1.1"
 cargo-release = "0.25.10"
 textwrap = { version = "0.16.1", features = ["default", "terminal_size"] }
 tokio-test = "0.4.3"
+tempfile = "3"
 
 [features]
 default = ["schema"]
 schema = []
 client = ["dep:tokio", "dep:reqwest", "dep:url", "dep:thiserror", "schema"]
 data = ["dep:object_store", "dep:thiserror", "dep:futures", "dep:tokio"]
+local = ["dep:thiserror", "dep:walkdir", "schema"]
 
 [[example]]
 name = "commit"
@@ -62,3 +64,13 @@ required-features = ["client"]
 name = "fetch"
 path = "examples/fetch.rs"
 required-features = ["data"]
+
+[[example]]
+name = "load_file"
+path = "examples/load_file.rs"
+required-features = ["local"]
+
+[[example]]
+name = "load_dir"
+path = "examples/load_dir.rs"
+required-features = ["local"]
