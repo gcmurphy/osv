@@ -500,10 +500,10 @@ pub struct Severity {
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum CreditType {
-    /// Validated the vulnerability to ensure accruacy or severity.
+    /// Validated the vulnerability to ensure accuracy or severity.
     Analyst,
 
-    /// Facilitated the corredinated response process.
+    /// Facilitated the coordinated response process.
     Coordinator,
 
     /// Identified the vulnerability
