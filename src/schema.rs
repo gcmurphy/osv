@@ -395,7 +395,7 @@ pub struct Affected {
 /// The type of reference information that has been provided. Examples include
 /// links to the original report, external advisories, or information about the
 /// fix.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 #[non_exhaustive]
 pub enum ReferenceType {
@@ -430,6 +430,7 @@ pub enum ReferenceType {
     /// A report, typically on a bug or issue tracker, of the vulnerability.
     Report,
 
+    #[default]
     #[serde(rename = "NONE")]
     Undefined,
 
@@ -441,7 +442,7 @@ pub enum ReferenceType {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Reference {
     /// The type of reference this URL points to.
-    #[serde(rename = "type")]
+    #[serde(rename = "type", default)]
     pub reference_type: ReferenceType,
 
     /// The url where more information can be obtained about
@@ -451,7 +452,7 @@ pub struct Reference {
 
 /// The [`SeverityType`](SeverityType) describes the quantitative scoring method used to rate the
 /// severity of the vulnerability.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 #[non_exhaustive]
 pub enum SeverityType {
     /// A CVSS vector string representing the unique characteristics and severity of the vulnerability
@@ -474,6 +475,7 @@ pub enum SeverityType {
 
     /// The severity score was arrived at by using an unspecified
     /// scoring method.
+    #[default]
     #[serde(rename = "UNSPECIFIED")]
     Unspecified,
 }
@@ -484,7 +486,7 @@ pub enum SeverityType {
 pub struct Severity {
     /// The severity type property must be a [`SeverityType`](SeverityType), which describes the
     /// quantitative method used to calculate the associated score.
-    #[serde(rename = "type")]
+    #[serde(rename = "type", default)]
     pub severity_type: SeverityType,
 
     /// The score property is a string representing the severity score based on the
