@@ -269,7 +269,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "SwiftURL" => Ok(Ecosystem::SwiftURL),
                     _ if value.starts_with("Ubuntu:") => {
                         regex_switch!(value,
-                            r#"^Ubuntu(?::Pro)?(?::(?<fips>FIPS(?:-preview|-updates)?))?:(?<version>\d+\.\d+)(?::LTS)?(?::for:(?<specialized>.+))?$"# => {
+                            r#"^Ubuntu(?::Pro)?(?::(?<fips>FIPS(?:-preview|-updates)?))?:(?<version>\d+\.\d+)(?::LTS)?(?::for:(?<specialized>.+))?"# => {
                                 Ecosystem::Ubuntu {
                                     version: version.to_string(),
                                     metadata: (!specialized.is_empty()).then_some(specialized.to_string()),
@@ -472,6 +472,10 @@ pub enum SeverityType {
     /// that is >= 4.0 and < 5.0 (e.g. `"CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:N/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N"`).
     #[serde(rename = "CVSS_V4")]
     CVSSv4,
+
+    /// A plain severity represented as a single word string defined by the Ubuntu security team.
+    /// (e.g `"medium"`)
+    Ubuntu,
 
     /// The severity score was arrived at by using an unspecified
     /// scoring method.
@@ -782,6 +786,19 @@ mod tests {
                 version: "20.04".to_string(),
                 pro: false,
                 lts: false,
+                fips: None,
+                metadata: None,
+            }
+        );
+
+        let json_str = r#""Ubuntu:Pro:24.04:LTS:Realtime:Kernel""#;
+        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
+        assert_eq!(
+            ubuntu,
+            Ecosystem::Ubuntu {
+                version: "24.04".to_string(),
+                pro: true,
+                lts: true,
                 fips: None,
                 metadata: None,
             }
