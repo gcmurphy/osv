@@ -102,7 +102,9 @@ impl Serialize for Ecosystem {
                 serializer.serialize_str(&format!("Alpine:{}", version))
             }
             Ecosystem::Android => serializer.serialize_str("Android"),
-            Ecosystem::BellSoftHardenedContainers => serializer.serialize_str("BellSoft Hardened Containers"),
+            Ecosystem::BellSoftHardenedContainers => {
+                serializer.serialize_str("BellSoft Hardened Containers")
+            }
             Ecosystem::Bioconductor => serializer.serialize_str("Bioconductor"),
             Ecosystem::Bitnami => serializer.serialize_str("Bitnami"),
             Ecosystem::Chainguard => serializer.serialize_str("Chainguard"),
