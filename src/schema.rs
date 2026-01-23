@@ -674,6 +674,7 @@ mod tests {
             modified: chrono::Utc::now(),
             withdrawn: None,
             aliases: None,
+            upstream: None,
             related: None,
             summary: None,
             details: None,
