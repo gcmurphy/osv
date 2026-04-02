@@ -38,3 +38,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add scorecard badge
 - enable publishing of scorecard results
 - update default permissions for all workflows
+
+[Unreleased]: https://github.com/gcmurphy/osv/compare/v0.2.2...HEAD

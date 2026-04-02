@@ -16,7 +16,7 @@ all-features = true
 [package.metadata.release]
 pre-release-replacements = [
   {file = "CHANGELOG.md", search = "Unreleased", replace = "{{version}}", min = 1},
-  {file = "CHANGELOG.md", search = "\\.\\.\\.HEAD", replace = "...{{tag_name}}", min = 1},
+  {file = "CHANGELOG.md", search = "...HEAD", replace = "...{{tag_name}}", min = 1},
 ]
 
 [dependencies]
