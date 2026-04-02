@@ -168,6 +168,7 @@ impl Serialize for Ecosystem {
                     parts.push("LTS".to_string());
                 }
                 if let Some(meta) = metadata {
+                    parts.push("for".to_string());
                     parts.push(meta.clone());
                 }
                 let serialized = parts.join(":");
@@ -631,6 +632,14 @@ pub struct Vulnerability {
 mod tests {
     use super::*;
 
+    fn check_ser_deser<T: Serialize + Deserialize<'static> + std::fmt::Debug + PartialEq>(
+        deser: T,
+        ser: &'static str,
+    ) {
+        assert_eq!(serde_json::to_string(&deser).unwrap(), ser);
+        assert_eq!(serde_json::from_str::<T>(ser).unwrap(), deser);
+    }
+
     #[test]
     fn test_no_serialize_null_fields() {
         let vuln = Vulnerability {
@@ -666,22 +675,12 @@ mod tests {
     #[test]
     fn test_maven_ecosystem() {
         let maven = Ecosystem::Maven("https://repo.maven.apache.org/maven2".to_string());
-        let as_json = serde_json::json!(maven);
-        assert_eq!(as_json, serde_json::json!("Maven"));
+        let json_str = r#""Maven""#;
+        check_ser_deser(maven, json_str);
 
         let maven = Ecosystem::Maven("https://repo1.example.com/maven2".to_string());
-        let as_json = serde_json::json!(maven);
-        assert_eq!(
-            as_json,
-            serde_json::json!("Maven:https://repo1.example.com/maven2")
-        );
-
-        let json_str = r#""Maven""#;
-        let maven: Ecosystem = serde_json::from_str(json_str).unwrap();
-        assert_eq!(
-            maven,
-            Ecosystem::Maven("https://repo.maven.apache.org/maven2".to_string())
-        );
+        let json_str = r#""Maven:https://repo1.example.com/maven2""#;
+        check_ser_deser(maven, json_str);
 
         let json_str = r#""Maven:""#;
         let maven: Ecosystem = serde_json::from_str(json_str).unwrap();
@@ -700,8 +699,8 @@ mod tests {
             fips: None,
             metadata: None,
         };
-        let as_json = serde_json::json!(ubuntu);
-        assert_eq!(as_json, serde_json::json!("Ubuntu:Pro:20.04:LTS"));
+        let json_str = r#""Ubuntu:Pro:20.04:LTS""#;
+        check_ser_deser(ubuntu, json_str);
 
         let ubuntu = Ecosystem::Ubuntu {
             version: "20.04".to_string(),
@@ -710,8 +709,8 @@ mod tests {
             fips: None,
             metadata: None,
         };
-        let as_json = serde_json::json!(ubuntu);
-        assert_eq!(as_json, serde_json::json!("Ubuntu:Pro:20.04"));
+        let json_str = r#""Ubuntu:Pro:20.04""#;
+        check_ser_deser(ubuntu, json_str);
 
         let ubuntu = Ecosystem::Ubuntu {
             version: "20.04".to_string(),
@@ -720,8 +719,8 @@ mod tests {
             fips: None,
             metadata: None,
         };
-        let as_json = serde_json::json!(ubuntu);
-        assert_eq!(as_json, serde_json::json!("Ubuntu:20.04:LTS"));
+        let json_str = r#""Ubuntu:20.04:LTS""#;
+        check_ser_deser(ubuntu, json_str);
 
         let ubuntu = Ecosystem::Ubuntu {
             version: "20.04".to_string(),
@@ -730,112 +729,48 @@ mod tests {
             fips: None,
             metadata: None,
         };
-        let as_json = serde_json::json!(ubuntu);
-        assert_eq!(as_json, serde_json::json!("Ubuntu:20.04"));
-
-        let json_str = r#""Ubuntu:Pro:20.04:LTS""#;
-        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
-        assert_eq!(
-            ubuntu,
-            Ecosystem::Ubuntu {
-                version: "20.04".to_string(),
-                pro: true,
-                lts: true,
-                fips: None,
-                metadata: None,
-            }
-        );
-
-        let json_str = r#""Ubuntu:Pro:20.04""#;
-        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
-        assert_eq!(
-            ubuntu,
-            Ecosystem::Ubuntu {
-                version: "20.04".to_string(),
-                pro: true,
-                lts: false,
-                fips: None,
-                metadata: None,
-            }
-        );
-
-        let json_str = r#""Ubuntu:20.04:LTS""#;
-        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
-        assert_eq!(
-            ubuntu,
-            Ecosystem::Ubuntu {
-                version: "20.04".to_string(),
-                pro: false,
-                lts: true,
-                fips: None,
-                metadata: None,
-            }
-        );
-
         let json_str = r#""Ubuntu:20.04""#;
-        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
-        assert_eq!(
-            ubuntu,
-            Ecosystem::Ubuntu {
-                version: "20.04".to_string(),
-                pro: false,
-                lts: false,
-                fips: None,
-                metadata: None,
-            }
-        );
+        check_ser_deser(ubuntu, json_str);
 
+        let ubuntu = Ecosystem::Ubuntu {
+            version: "22.04".to_string(),
+            pro: false,
+            lts: true,
+            fips: None,
+            metadata: Some("NVIDIA:BlueField".to_string()),
+        };
         let json_str = r#""Ubuntu:22.04:LTS:for:NVIDIA:BlueField""#;
-        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
-        assert_eq!(
-            ubuntu,
-            Ecosystem::Ubuntu {
-                version: "22.04".to_string(),
-                pro: false,
-                lts: true,
-                fips: None,
-                metadata: Some("NVIDIA:BlueField".to_string()),
-            }
-        );
+        check_ser_deser(ubuntu, json_str);
 
+        let ubuntu = Ecosystem::Ubuntu {
+            version: "22.04".to_string(),
+            pro: true,
+            lts: true,
+            fips: Some("FIPS-preview".to_string()),
+            metadata: None,
+        };
         let json_str = r#""Ubuntu:Pro:FIPS-preview:22.04:LTS""#;
-        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
-        assert_eq!(
-            ubuntu,
-            Ecosystem::Ubuntu {
-                version: "22.04".to_string(),
-                pro: true,
-                lts: true,
-                fips: Some("FIPS-preview".to_string()),
-                metadata: None,
-            }
-        );
+        check_ser_deser(ubuntu, json_str);
 
+        let ubuntu = Ecosystem::Ubuntu {
+            version: "18.04".to_string(),
+            pro: true,
+            lts: true,
+            fips: Some("FIPS-updates".to_string()),
+            metadata: None,
+        };
         let json_str = r#""Ubuntu:Pro:FIPS-updates:18.04:LTS""#;
-        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
-        assert_eq!(
-            ubuntu,
-            Ecosystem::Ubuntu {
-                version: "18.04".to_string(),
-                pro: true,
-                lts: true,
-                fips: Some("FIPS-updates".to_string()),
-                metadata: None,
-            }
-        );
+        check_ser_deser(ubuntu, json_str);
+
+        let ubuntu = Ecosystem::Ubuntu {
+            version: "16.04".to_string(),
+            pro: true,
+            lts: true,
+            fips: Some("FIPS".to_string()),
+            metadata: None,
+        };
 
         let json_str = r#""Ubuntu:Pro:FIPS:16.04:LTS""#;
-        let ubuntu: Ecosystem = serde_json::from_str(json_str).unwrap();
-
-        assert_eq!(
-            ubuntu,
-            Ecosystem::Ubuntu {
-                version: "16.04".to_string(),
-                pro: true,
-                lts: true,
-                fips: Some("FIPS".to_string()),
-                metadata: None,
-            }
-        );
+        check_ser_deser(ubuntu, json_str);
     }
 }
