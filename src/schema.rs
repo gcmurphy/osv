@@ -33,8 +33,10 @@ pub type Version = String;
 #[non_exhaustive]
 pub enum Ecosystem {
     AlmaLinux(Option<String>),
+    Alpaquita,
     Alpine(Option<String>),
     Android,
+    BellSoftHardenedContainers,
     Bioconductor,
     Bitnami,
     Chainguard,
@@ -43,6 +45,7 @@ pub enum Ecosystem {
     CratesIO,
     Debian(Option<String>),
     DWF,
+    Echo,
     GHC,
     GSD,
     GitHubActions,
@@ -50,11 +53,15 @@ pub enum Ecosystem {
     Hackage,
     Hex,
     JavaScript,
+    Julia,
+    Kubernetes,
     Linux,
     Mageia(String),
     Maven(String),
+    MinimOS,
     Npm,
     NuGet,
+    OpenEuler,
     OpenSUSE(Option<String>),
     OssFuzz,
     Packagist,
@@ -75,6 +82,7 @@ pub enum Ecosystem {
         lts: bool,
     },
     UVI,
+    VSCode,
     Wolfi,
 }
 
@@ -88,11 +96,15 @@ impl Serialize for Ecosystem {
             Ecosystem::AlmaLinux(Some(release)) => {
                 serializer.serialize_str(&format!("AlmaLinux:{}", release))
             }
+            Ecosystem::Alpaquita => serializer.serialize_str("Alpaquita"),
             Ecosystem::Alpine(None) => serializer.serialize_str("Alpine"),
             Ecosystem::Alpine(Some(version)) => {
                 serializer.serialize_str(&format!("Alpine:{}", version))
             }
             Ecosystem::Android => serializer.serialize_str("Android"),
+            Ecosystem::BellSoftHardenedContainers => {
+                serializer.serialize_str("BellSoft Hardened Containers")
+            }
             Ecosystem::Bioconductor => serializer.serialize_str("Bioconductor"),
             Ecosystem::Bitnami => serializer.serialize_str("Bitnami"),
             Ecosystem::Chainguard => serializer.serialize_str("Chainguard"),
@@ -104,6 +116,7 @@ impl Serialize for Ecosystem {
                 serializer.serialize_str(&format!("Debian:{}", version))
             }
             Ecosystem::DWF => serializer.serialize_str("DWF"),
+            Ecosystem::Echo => serializer.serialize_str("Echo"),
             Ecosystem::GHC => serializer.serialize_str("GHC"),
             Ecosystem::GSD => serializer.serialize_str("GSD"),
             Ecosystem::GitHubActions => serializer.serialize_str("GitHub Actions"),
@@ -111,6 +124,8 @@ impl Serialize for Ecosystem {
             Ecosystem::Hackage => serializer.serialize_str("Hackage"),
             Ecosystem::Hex => serializer.serialize_str("Hex"),
             Ecosystem::JavaScript => serializer.serialize_str("JavaScript"),
+            Ecosystem::Julia => serializer.serialize_str("Julia"),
+            Ecosystem::Kubernetes => serializer.serialize_str("Kubernetes"),
             Ecosystem::Linux => serializer.serialize_str("Linux"),
             Ecosystem::Mageia(release) => serializer.serialize_str(&format!("Mageia:{}", release)),
             Ecosystem::Maven(repository) => {
@@ -120,8 +135,10 @@ impl Serialize for Ecosystem {
                 };
                 serializer.serialize_str(&mvn)
             }
+            Ecosystem::MinimOS => serializer.serialize_str("MinimOS"),
             Ecosystem::Npm => serializer.serialize_str("npm"),
             Ecosystem::NuGet => serializer.serialize_str("NuGet"),
+            Ecosystem::OpenEuler => serializer.serialize_str("openEuler"),
             Ecosystem::OpenSUSE(None) => serializer.serialize_str("openSUSE"),
             Ecosystem::OpenSUSE(Some(release)) => {
                 serializer.serialize_str(&format!("openSUSE:{}", release))
@@ -175,6 +192,7 @@ impl Serialize for Ecosystem {
                 serializer.serialize_str(&serialized)
             }
             Ecosystem::UVI => serializer.serialize_str("UVI"),
+            Ecosystem::VSCode => serializer.serialize_str("VSCode"),
             Ecosystem::Wolfi => serializer.serialize_str("Wolfi"),
         }
     }
@@ -200,6 +218,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
             {
                 match value {
                     "AlmaLinux" | "AlmaLinux:" => Ok(Ecosystem::AlmaLinux(None)),
+                    "Alpaquita" => Ok(Ecosystem::Alpaquita),
                     _ if value.starts_with("AlmaLinux:") => Ok(Ecosystem::AlmaLinux(
                         value.strip_prefix("AlmaLinux:").map(|v| v.to_string()),
                     )),
@@ -208,6 +227,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
                         value.strip_prefix("Alpine:").map(|v| v.to_string()),
                     )),
                     "Android" => Ok(Ecosystem::Android),
+                    "BellSoft Hardened Containers" => Ok(Ecosystem::BellSoftHardenedContainers),
                     "Bioconductor" => Ok(Ecosystem::Bioconductor),
                     "Bitnami" => Ok(Ecosystem::Bitnami),
                     "Chainguard" => Ok(Ecosystem::Chainguard),
@@ -219,6 +239,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
                         value.strip_prefix("Debian:").map(|v| v.to_string()),
                     )),
                     "DWF" => Ok(Ecosystem::DWF),
+                    "Echo" => Ok(Ecosystem::Echo),
                     "GHC" => Ok(Ecosystem::GHC),
                     "GitHub Actions" => Ok(Ecosystem::GitHubActions),
                     "Go" => Ok(Ecosystem::Go),
@@ -226,6 +247,8 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "Hackage" => Ok(Ecosystem::Hackage),
                     "Hex" => Ok(Ecosystem::Hex),
                     "JavaScript" => Ok(Ecosystem::JavaScript),
+                    "Julia" => Ok(Ecosystem::Julia),
+                    "Kubernetes" => Ok(Ecosystem::Kubernetes),
                     "Linux" => Ok(Ecosystem::Linux),
                     _ if value.starts_with("Mageia:") => Ok(Ecosystem::Mageia(
                         value
@@ -239,8 +262,10 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     _ if value.starts_with("Maven:") => Ok(Ecosystem::Maven(
                         value.strip_prefix("Maven:").map(|v| v.to_string()).unwrap(),
                     )),
+                    "MinimOS" => Ok(Ecosystem::MinimOS),
                     "npm" => Ok(Ecosystem::Npm),
                     "NuGet" => Ok(Ecosystem::NuGet),
+                    "openEuler" => Ok(Ecosystem::OpenEuler),
                     "openSUSE" => Ok(Ecosystem::OpenSUSE(None)),
                     _ if value.starts_with("openSUSE:") => Ok(Ecosystem::OpenSUSE(
                         value.strip_prefix("openSUSE:").map(|v| v.to_string()),
@@ -282,6 +307,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
                         ).ok_or(de::Error::unknown_variant(value, &["Ecosystem"]))
                     }
                     "UVI" => Ok(Ecosystem::UVI),
+                    "VSCode" => Ok(Ecosystem::VSCode),
                     "Wolfi" => Ok(Ecosystem::Wolfi),
                     _ => Err(de::Error::unknown_variant(value, &["Ecosystem"])),
                 }
@@ -473,6 +499,11 @@ pub enum SeverityType {
     #[serde(rename = "CVSS_V4")]
     CVSSv4,
 
+    /// A lowercased string representing the [Ubuntu priority](https://ubuntu.com/security/cves/about#priority).
+    /// This is based on many factors including severity, importance, risk, estimated number of affected users,
+    /// software configuration, active exploitation, and other factors.
+    Ubuntu,
+
     /// The severity score was arrived at by using an unspecified
     /// scoring method.
     #[serde(rename = "UNSPECIFIED")]
@@ -584,6 +615,11 @@ pub struct Vulnerability {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub aliases: Option<Vec<String>>,
 
+    /// The `upstream` field gives a list of IDs of upstream vulnerabilities that are referred to
+    /// by the vulnerability entry.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub upstream: Option<Vec<String>>,
+
     /// The related field gives a list of IDs of closely related vulnerabilities, such as the same
     /// problem in alternate ecosystems.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -649,6 +685,7 @@ mod tests {
             modified: chrono::Utc::now(),
             withdrawn: None,
             aliases: None,
+            upstream: None,
             related: None,
             summary: None,
             details: None,
