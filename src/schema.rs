@@ -596,6 +596,7 @@ pub struct Vulnerability {
 
     /// The published field gives the time the entry should be considered to have been published,
     /// as an RFC3339-formatted time stamp in UTC (ending in “Z”).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub published: Option<DateTime<Utc>>,
 
     /// The modified field gives the time the entry was last modified, as an RFC3339-formatted
@@ -642,6 +643,7 @@ pub struct Vulnerability {
     pub details: Option<String>,
 
     /// Indicates the specific package ranges that are affected by this vulnerability.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub affected: Option<Vec<Affected>>,
 
     /// An optional list of external reference's that provide more context about this
