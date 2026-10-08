@@ -295,7 +295,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "SwiftURL" => Ok(Ecosystem::SwiftURL),
                     _ if value.starts_with("Ubuntu:") => {
                         regex_switch!(value,
-                            r#"^Ubuntu(?::Pro)?(?::(?<fips>FIPS(?:-preview|-updates)?))?:(?<version>\d+\.\d+)(?::LTS)?(?::for:(?<specialized>.+))?"# => {
+                            r#"^Ubuntu(?::Nvidia-BlueField)?(?::Pro)?(?::Realtime)?(?::(?<fips>FIPS(?:-preview|-updates)?))?:(?<version>\d+\.\d+)(?::LTS)?(?::for:(?<specialized>.+))?"# => {
                                 Ecosystem::Ubuntu {
                                     version: version.to_string(),
                                     metadata: (!specialized.is_empty()).then_some(specialized.to_string()),
