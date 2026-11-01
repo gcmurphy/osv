@@ -70,6 +70,7 @@ pub enum Ecosystem {
     PyPI,
     Python,
     RedHat(Option<String>),
+    RedHatLightwell(Option<String>),
     RockyLinux(Option<String>),
     RubyGems,
     SUSE(Option<String>),
@@ -155,6 +156,10 @@ impl Serialize for Ecosystem {
             Ecosystem::RedHat(None) => serializer.serialize_str("Red Hat"),
             Ecosystem::RedHat(Some(release)) => {
                 serializer.serialize_str(&format!("Red Hat:{}", release))
+            }
+            Ecosystem::RedHatLightwell(None) => serializer.serialize_str("Red Hat Lightwell"),
+            Ecosystem::RedHatLightwell(Some(ecosystem)) => {
+                serializer.serialize_str(&format!("Red Hat Lightwell:{}", ecosystem))
             }
             Ecosystem::RockyLinux(None) => serializer.serialize_str("Rocky Linux"),
             Ecosystem::RockyLinux(Some(release)) => {
@@ -279,6 +284,12 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "Pub" => Ok(Ecosystem::Pub),
                     "PyPI" => Ok(Ecosystem::PyPI),
                     "Python" => Ok(Ecosystem::Python),
+                    "Red Hat Lightwell" => Ok(Ecosystem::RedHatLightwell(None)),
+                    _ if value.starts_with("Red Hat Lightwell:") => Ok(Ecosystem::RedHatLightwell(
+                        value
+                            .strip_prefix("Red Hat Lightwell:")
+                            .map(|v| v.to_string()),
+                    )),
                     "Red Hat" => Ok(Ecosystem::RedHat(None)),
                     _ if value.starts_with("Red Hat:") => Ok(Ecosystem::RedHat(
                         value.strip_prefix("Red Hat:").map(|v| v.to_string()),
@@ -717,6 +728,22 @@ mod tests {
         assert!(!str_json.contains("severity"));
         assert!(!str_json.contains("credits"));
         assert!(!str_json.contains("database_specific"));
+    }
+
+    #[test]
+    fn test_red_hat_lightwell_ecosystem() {
+        let lightwell = Ecosystem::RedHatLightwell(None);
+        let json_str = r#""Red Hat Lightwell""#;
+        check_ser_deser(lightwell, json_str);
+
+        // Java (Maven) and Python (PyPI) Lightwell ecosystems
+        let lightwell = Ecosystem::RedHatLightwell(Some("Maven".to_string()));
+        let json_str = r#""Red Hat Lightwell:Maven""#;
+        check_ser_deser(lightwell, json_str);
+
+        let lightwell = Ecosystem::RedHatLightwell(Some("PyPI".to_string()));
+        let json_str = r#""Red Hat Lightwell:PyPI""#;
+        check_ser_deser(lightwell, json_str);
     }
 
     #[test]
