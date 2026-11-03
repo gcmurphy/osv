@@ -70,6 +70,9 @@ pub enum Ecosystem {
     PyPI,
     Python,
     RedHat(Option<String>),
+    /// Red Hat Lightwell remediations; suffix is the native OSV ecosystem
+    /// (e.g. `Red Hat Lightwell:Maven`, `Red Hat Lightwell:PyPI`).
+    RedHatLightwell(Box<Ecosystem>),
     RockyLinux(Option<String>),
     RubyGems,
     SUSE(Option<String>),
@@ -155,6 +158,14 @@ impl Serialize for Ecosystem {
             Ecosystem::RedHat(None) => serializer.serialize_str("Red Hat"),
             Ecosystem::RedHat(Some(release)) => {
                 serializer.serialize_str(&format!("Red Hat:{}", release))
+            }
+            Ecosystem::RedHatLightwell(ecosystem) => {
+                let inner = serde_json::to_value(ecosystem.as_ref())
+                    .map_err(serde::ser::Error::custom)?;
+                let inner = inner.as_str().ok_or_else(|| {
+                    serde::ser::Error::custom("ecosystem must serialize as a string")
+                })?;
+                serializer.serialize_str(&format!("Red Hat Lightwell:{}", inner))
             }
             Ecosystem::RockyLinux(None) => serializer.serialize_str("Rocky Linux"),
             Ecosystem::RockyLinux(Some(release)) => {
@@ -279,6 +290,18 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     "Pub" => Ok(Ecosystem::Pub),
                     "PyPI" => Ok(Ecosystem::PyPI),
                     "Python" => Ok(Ecosystem::Python),
+                    _ if let Some(suffix) = value.strip_prefix("Red Hat Lightwell:") => {
+                        if suffix.is_empty() {
+                            return Err(de::Error::unknown_variant(value, &["Ecosystem"]));
+                        }
+                        // Re-parse the required native-ecosystem suffix; reject nested Lightwell.
+                        match EcosystemVisitor.visit_str(suffix)? {
+                            Ecosystem::RedHatLightwell(_) => {
+                                Err(de::Error::unknown_variant(value, &["Ecosystem"]))
+                            }
+                            native => Ok(Ecosystem::RedHatLightwell(Box::new(native))),
+                        }
+                    }
                     "Red Hat" => Ok(Ecosystem::RedHat(None)),
                     _ if value.starts_with("Red Hat:") => Ok(Ecosystem::RedHat(
                         value.strip_prefix("Red Hat:").map(|v| v.to_string()),
@@ -717,6 +740,34 @@ mod tests {
         assert!(!str_json.contains("severity"));
         assert!(!str_json.contains("credits"));
         assert!(!str_json.contains("database_specific"));
+    }
+
+    #[test]
+    fn test_red_hat_lightwell_ecosystem() {
+        // Java (Maven) and Python (PyPI) Lightwell ecosystems
+        let lightwell = Ecosystem::RedHatLightwell(Box::new(Ecosystem::Maven(
+            "https://repo.maven.apache.org/maven2".to_string(),
+        )));
+        let json_str = r#""Red Hat Lightwell:Maven""#;
+        check_ser_deser(lightwell, json_str);
+
+        let lightwell = Ecosystem::RedHatLightwell(Box::new(Ecosystem::PyPI));
+        let json_str = r#""Red Hat Lightwell:PyPI""#;
+        check_ser_deser(lightwell, json_str);
+
+        let lightwell = Ecosystem::RedHatLightwell(Box::new(Ecosystem::Maven(
+            "https://maven.google.com".to_string(),
+        )));
+        let json_str = r#""Red Hat Lightwell:Maven:https://maven.google.com""#;
+        check_ser_deser(lightwell, json_str);
+
+        // Suffix is required; nested Lightwell is rejected.
+        assert!(serde_json::from_str::<Ecosystem>(r#""Red Hat Lightwell""#).is_err());
+        assert!(serde_json::from_str::<Ecosystem>(r#""Red Hat Lightwell:""#).is_err());
+        assert!(
+            serde_json::from_str::<Ecosystem>(r#""Red Hat Lightwell:Red Hat Lightwell:Maven""#)
+                .is_err()
+        );
     }
 
     #[test]
