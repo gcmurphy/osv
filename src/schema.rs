@@ -84,6 +84,11 @@ pub enum Ecosystem {
     UVI,
     VSCode,
     Wolfi,
+    /// An ecosystem this version of the crate does not know, kept as written.
+    ///
+    /// OSV adds ecosystems regularly; without this variant a single record from a new one would
+    /// make a whole response or data dump fail to parse.
+    Other(String),
 }
 
 impl Serialize for Ecosystem {
@@ -194,6 +199,7 @@ impl Serialize for Ecosystem {
             Ecosystem::UVI => serializer.serialize_str("UVI"),
             Ecosystem::VSCode => serializer.serialize_str("VSCode"),
             Ecosystem::Wolfi => serializer.serialize_str("Wolfi"),
+            Ecosystem::Other(ecosystem) => serializer.serialize_str(ecosystem),
         }
     }
 }
@@ -294,7 +300,7 @@ impl<'de> Deserialize<'de> for Ecosystem {
                     )),
                     "SwiftURL" => Ok(Ecosystem::SwiftURL),
                     _ if value.starts_with("Ubuntu:") => {
-                        regex_switch!(value,
+                        Ok(regex_switch!(value,
                             r#"^Ubuntu(?::Pro)?(?::(?<fips>FIPS(?:-preview|-updates)?))?:(?<version>\d+\.\d+)(?::LTS)?(?::for:(?<specialized>.+))?"# => {
                                 Ecosystem::Ubuntu {
                                     version: version.to_string(),
@@ -304,12 +310,14 @@ impl<'de> Deserialize<'de> for Ecosystem {
                                     lts: value.contains(":LTS"),
                                 }
                             }
-                        ).ok_or(de::Error::unknown_variant(value, &["Ecosystem"]))
+                        )
+                        // A format this crate does not know yet.
+                        .unwrap_or_else(|| Ecosystem::Other(value.to_string())))
                     }
                     "UVI" => Ok(Ecosystem::UVI),
                     "VSCode" => Ok(Ecosystem::VSCode),
                     "Wolfi" => Ok(Ecosystem::Wolfi),
-                    _ => Err(de::Error::unknown_variant(value, &["Ecosystem"])),
+                    _ => Ok(Ecosystem::Other(value.to_string())),
                 }
             }
         }
@@ -684,6 +692,16 @@ mod tests {
     ) {
         assert_eq!(serde_json::to_string(&deser).unwrap(), ser);
         assert_eq!(serde_json::from_str::<T>(ser).unwrap(), deser);
+    }
+
+    #[test]
+    fn test_unknown_ecosystems_are_kept() {
+        check_ser_deser(Ecosystem::Other("Foo".to_string()), "\"Foo\"");
+        check_ser_deser(Ecosystem::Other("Foo:1.2".to_string()), "\"Foo:1.2\"");
+        // An Ubuntu ecosystem in a format this crate does not know yet.
+        check_ser_deser(Ecosystem::Other("Ubuntu:Bar".to_string()), "\"Ubuntu:Bar\"");
+        // Known ecosystems are still parsed as such.
+        check_ser_deser(Ecosystem::Wolfi, "\"Wolfi\"");
     }
 
     #[test]
